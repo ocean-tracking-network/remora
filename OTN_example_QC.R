@@ -5,7 +5,7 @@
 #install.packages('sp')
 #install.packages('raster')
 #install.packages('stars')
-#devtools::install_github('ocean-tracking-network/remora@get_data_qc', force=TRUE)
+devtools::install_github('ocean-tracking-network/remora@get_data_qc', force=TRUE)
 
 library(readr)
 library(tidyverse)

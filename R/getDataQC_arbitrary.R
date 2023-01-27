@@ -182,7 +182,7 @@ get_data_arbitrary <- function(det=NULL,
   
   #View(det_data)
   
-  View(rec_meta)
+  #View(rec_meta)
   
   if(!is.null(rec_meta)) {
     message("rec_meta is not null")
@@ -407,5 +407,6 @@ remove_unnamed_columns <- function(dataframe) {
     drops <- paste0("X",1:20)[paste0("X",1:20) %in% names(dataframe)]
     dataframe <- dataframe %>% dplyr::select(-any_of(drops))
   }
+  message('arbitrary data get done, moving on')
   return(as.data.frame(dataframe))
 }
