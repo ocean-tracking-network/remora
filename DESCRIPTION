@@ -115,7 +115,7 @@ Imports:
     glatos,
     readxl,
     rerddap,
-    rangeBuilder
+    rangeBuilder,
     htmlwidgets
 Suggests: 
     testthat (>= 3.0.0),
