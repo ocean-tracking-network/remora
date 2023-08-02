@@ -6,273 +6,276 @@
 ##' @param Lcheck (logical; default TRUE) test for receiver_deployment_latitudes
 ##' in N hemisphere at correct to S hemisphere. Set to FALSE for QC on N hemisphere data
 ##' @param logfile path to logfile; default is the working directory
+##' @param tests_vector ...
+##' @param data_format currently, "imos" (default) or "otn"
+##' @param shapefile A shapefile for species home ranges. Can be left null but some tests may not run. 
 ##'
 ##' @details ...
 ##'
 ##' @return temporal_outcome is a list with each element corresponding to a QC'd tag detection file
 ##'
 ##' @importFrom dplyr '%>%' bind_cols
-##' @importFrom sp 'coordinates<-' 'proj4string<-' 'proj4string' over
+##' @importFrom sp 'coordinates<-' 'proj4string<-' 'proj4string' over SpatialPoints
 ##' @importFrom geosphere distGeo
+##' @importFrom glatos make_transition2
 ##'
 ##' @keywords internal
 ##'
 
 
-qc <- function(x, Lcheck = TRUE, logfile) {
+qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
+                                                           "Velocity_QC",
+                                                           "Distance_QC",
+                                                           "DetectionDistribution_QC",
+                                                           "DistanceRelease_QC",
+                                                           "ReleaseDate_QC",
+                                                           "ReleaseLocation_QC",
+                                                           "Detection_QC"),
+               data_format = "imos",
+               shapefile = NULL,
+               fda_type = "time-diff") {
   if(!is.data.frame(x)) stop("x must be a data.frame")
-  
-  ## Initial tests to identify & correct obvious errors in data
-  ## first check for NA's in detection_datetime & remove and flag in logfile
-  rn <- which(is.na(x$detection_datetime))
-  if(length(rn) > 0) {
-    lapply(1:length(rn), function(i) {
-      write(paste0(x$filename[1],
-                   ":  ", length(rn), " NA's found in detection_datetime; records removed from QC'd output"),
-            file = logfile,
-            append = TRUE)
-    })
-    ## remove records with NA's in the above variables so QC can proceed
-    x <- x[-rn,]
-  }
-  
-  ## check for NA's in (receiver_deployment) longitude/latitude & remove and flag in logfile
-  rn <- which(is.na(x$longitude) | is.na(x$latitude))
-  if(length(rn) > 0) {
-    lapply(1:length(rn), function(i) {
-      write(paste0(x$filename[1],
-                   ":  ", length(rn), " NA's found in receiver_deployment_longitude &/or latitude; records removed from QC'd output"),
-            file = logfile,
-            append = TRUE)
-    })
-    ## remove records with NA's in the above variables so QC can proceed
-    x <- x[-rn,]
-  }
-  
-  ## check for & correct any lat's incorrectly in N hemisphere
-  if(any(x$latitude > 0) & Lcheck) {
-    ## how many incorrect records
-    n <- sum(x$latitude > 0)
-    ## write to logfile
-    write(paste0(x$filename[1],
-                ":  ", n, " receiver_deployment_latitude(s) incorrectly entered in N hemisphere; corrected in QC output"),
-          file = logfile,
-          append = TRUE)
-
-      x <- x %>% mutate(latitude = ifelse(latitude > 0, -1 * latitude, latitude))
-  }
-
-
   ## Configure output processed data file
-  temporal_outcome <- data.frame(matrix(ncol = 8, nrow = nrow(x)))
-  colnames(temporal_outcome) <- c("FDA_QC",
-                                  "Velocity_QC",
-                                  "Distance_QC",
-                                  "DetectionDistribution_QC",
-                                  "DistanceRelease_QC",
-                                  "ReleaseDate_QC",
-                                  "ReleaseLocation_QC",
-                                  "Detection_QC")
-
-  ## FIXME: these 2 sections now redundant - IDJ 25/01/2022
-  ## check for missing detection coordinates
-  if(any(is.na(x$longitude)) | any(is.na(x$latitude))) {
-    ## how many NA lon and/or lat records
-    n <- sum(is.na(x$longitude) | is.na(x$latitude))
-    ## write to logfile
-    write(paste0(x$filename[1],
-                 ":  ", n, " receiver_deployment_longitudes &/or latitudes are missing; file not QC'd"),
-          file = logfile,
-          append = TRUE)
-    
-    x <- x %>%
-      rename(receiver_deployment_longitude = longitude,
-             receiver_deployment_latitude = latitude)
+  temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
+  colnames(temporal_outcome) <- tests_vector
+  
+  #If our dataframe is only one entry long, quit.
+  if(nrow(x) == 1) {
+    message("Dataframe must have more than one row for QC.")
     return(bind_cols(x, temporal_outcome))
-    stop("NA's found in detection locations - check logfile for details")
   }
+  
+  #Start by removing any rows that have NAs in the datetime, lat, or long columns. I'd like to return to this function and make something
+  #a little more comprehensive but for now I've just sliced out the code and hived it off into its own function for cleanliness' sake.
+  #message("Removing NAs")
+  x <- qc_remove_nas(x)
+  #message("NAs removed.")
+  
+  #I've commented out this check for now, I think we're not going to want this what with our intended global scope. 
+  ## IDJ - uncommented as latitude check is useful for IMOS data. I've added to the conditional so this only gets 
+  ##  implemented if the data_format = "imos"
+  ## check for & correct any lat's incorrectly in N hemisphere
+  if(any(x$latitude > 0) & Lcheck & data_format == "imos") {
+   ## how many incorrect records
+   n <- sum(x$latitude > 0)
+   ## write to logfile
+   write(paste0(x$filename[1],
+               ":  ", n, " receiver_deployment_latitude(s) incorrectly entered in N hemisphere; corrected in QC output"),
+         file = logfile,
+         append = TRUE)
 
-  ## check for missing transmitter deployment coordinates
-  if(any(is.na(x$transmitter_deployment_longitude),
-         is.na(x$transmitter_deployment_latitude))) {
-    ## write to logfile
-    write(paste0(x$filename[1],
-                 ":  transmitter_deployment_longitude &/or latitude are missing; file not QC'd"),
-          file = logfile,
-          append = TRUE)
-    
-    x <- x %>%
-      rename(receiver_deployment_longitude = longitude,
-             receiver_deployment_latitude = latitude)
-    return(bind_cols(x, temporal_outcome))
-    stop("NA's found in transmitter deployment locations - check logfile for details")
+     x <- x %>% mutate(latitude = ifelse(latitude > 0, -1 * latitude, latitude))
   }
-
-
-  spe <- unique(x$species_scientific_name)
-  CAAB_species_id <- unique(x$CAAB_species_id)
-
-  ## Find corresponding ALA shapefile based on species name
-  shp_b <- NULL
-  if (!is.na(spe) & !is.na(CAAB_species_id))
-    shp_b <- try(get_expert_distribution_shp(CAAB_species_id, spe), silent = TRUE)
-
-  ## if no shape file or spe or CAAB_species_id is missing then append to logfile & continue
-  if(is.null(shp_b)) {
-    ## write to logfile
-    write(paste0(x$filename[1],
-                ": shapefile not available for ", spe, "; Dectection distribution not tested"),
-          file = logfile,
-          append = TRUE)
-  } else if(inherits(shp_b, "try-error")) {
-    ## write to logfile
-    write(paste0(x$filename[1],
-                 ": shapefile could not be downloaded for ", spe, "; Dectection distribution not tested"),
-          file = logfile,
-          append = TRUE)
+  
+  #Removed sections flagged as redundant. - BD 30/06/2022
+  message(x$filename[1])
+  write(paste0(x$filename[1],":  ", " Grabbing species shapefile."),
+        file = logfile,
+        append = TRUE)
+  if(data_format == "imos") {
+    spe <- unique(x$species_scientific_name)
+    CAAB_species_id <- unique(x$CAAB_species_id)
+  
+    ## Find corresponding ALA shapefile based on species name
     shp_b <- NULL
+    if (!is.na(spe) & !is.na(CAAB_species_id))
+      shp_b <- try(get_expert_distribution_shp(CAAB_species_id, spe))
+  
+    ## if no shape file or spe or CAAB_species_id is missing then append to logfile & continue
+    if(is.null(shp_b)) {
+      ## write to logfile
+      write(paste0(x$filename[1],
+                  ": shapefile not available for ", spe, "; Dectection distribution not tested"),
+            file = logfile,
+            append = TRUE)
+    } else if(inherits(shp_b, "try-error")) {
+      ## write to logfile
+      write(paste0(x$filename[1],
+                   ": shapefile could not be downloaded for ", spe, "; Dectection distribution not tested"),
+            file = logfile,
+            append = TRUE)
+      shp_b <- NULL
+    }
+  
+  } else if (data_format == "otn") {
+    if(is.null(shapefile)) {
+      message("WARNING: No shapefile supplied. Some tests may not run.")
+    }
+    shp_b <- shapefile
   }
-
+  write(paste0(x$filename[1],
+               ":  "," Shapefile Grab done."),
+        file = logfile,
+        append = TRUE)
+  
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
   ##  coordinates to SpatialPoints to test subsequently whether or not detections 
   ##  are in distribution range
   if (!is.null(shp_b)) {
-    ll <- unique(data.frame(x$longitude, x$latitude))
-    coordinates(ll) <- ~ x.longitude + x.latitude
-    proj4string(ll) <- suppressWarnings(proj4string(shp_b))
+    #message("shapefile not null, starting lat/lon conversion to SpatialPoints")
 
+    ll <- unique(data.frame(x$longitude, x$latitude))
+    
+    ll <- SpatialPoints(ll, proj4string = CRS("EPSG:4326"))
+    #coordinates(ll) <- ~ x.longitude + x.latitude
+    #message("Coordinates set")
+    #proj4string(ll) <- proj4string(shp_b)
+    #st_crs(ll) <- CRS("EPSG:4326")
+    #message("projection string set") 
+    
+    ll_r <- NULL
     if (!is.na(x$transmitter_deployment_longitude[1])) {
       ll_r <-
         data.frame(x$transmitter_deployment_longitude[1], x$transmitter_deployment_latitude[1])
-      coordinates(ll_r) <-
-        ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
-      proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
+      #message("Step two")
+      ll_r <- SpatialPoints(ll_r, proj4string = CRS("EPSG:4326"))
+      #coordinates(ll_r) <-
+      #  ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
+      #message("Step three")
+      #proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
+      #st_crs(ll_r) <- CRS("EPSG:4326")
     }
   }
+  message("Conversion done.")
 
-		## False Detection Algorithm test
-		sta_rec <- unique(x$installation_name)
-		sta_rec <- sta_rec[order(sta_rec)]
+  
+	## False Detection Algorithm test
+  if("FDA_QC" %in% colnames(temporal_outcome))
+  {
+    write(paste0(x$filename[1],
+                 ":  ", " Starting false detection test"),
+          file = logfile,
+          append = TRUE)
+    
+    #Trying to force pincock into working as a stopgap.
+    x$transmitter_codespace <- x$transmitter_id
+    x$receiver_sn <- x$receiver_id
+    x$detection_timestamp_utc <- x$detection_datetime
+    
+    write(paste0(x$filename[1],
+                 ":  ", " Stopgap columns set"),
+          file = logfile,
+          append = TRUE)
+    
+    temporal_outcome <- qc_false_detection_test(x, temporal_outcome, type = fda_type)
+    write(paste0(x$filename[1],
+                 ":  ", " False detection test done."),
+          file = logfile,
+          append = TRUE)
+  }
+	
+  
+	#bathyUrl = "https://upwell.pfeg.noaa.gov/erddap/griddap/etopo5.geotif?ROSE%5B(40):1:(50)%5D%5B(280):1:(320)%5D"
+  #message("Starting dist/velocity tests")
+  #Commented out to test if I can get the rest of this running
+	## Distance and Velocity tests
+  dist <- NULL
+  if(any(is.na(x$transmitter_deployment_longitude)) | any(is.na(x$transmitter_deployment_longitude))) {
+    write(paste0(x$filename[1],
+                 ":  ", " Not enough data for some QC checks."),
+          file = logfile,
+          append = TRUE)
+  }
+  else
+  {
+  	position <- data.frame(longitude = c(x$transmitter_deployment_longitude[1], x$longitude),
+  		                       latitude = c(x$transmitter_deployment_latitude[1], x$latitude))
+  	
+    #message("position set")
 
-		for (j in 1:length(sta_rec)){
-			sel <- which(x$installation_name == sta_rec[j])
-			sub <- x[sel, ]
+    #Distance temporarily commented out. We're going to reimplement a lot of this and that includes the shortest_dist calculation, which
+    #right now chokes out the rest of the code. So this blows away most of the checks, but it lets the code run so that we can see what
+    #happens when the OTN data goes thru it. 
+    #dist <- NULL
+    # tr is included in the sysdata, but if someone brings their own shapefile then we have to create our own. 
+    ## IDJ: add conditional on data_format
+    ## BD: added a check to not run the OTN version of this if shp_b is null
+  	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
+  	dist <- switch(data_format,
+  	               imos = {
+  	                 shortest_dist(position,
+  	                               x$installation_name,
+  	                               rast = Aust_raster,
+  	                               tr = tr)
+  	               },
+  	               otn = {
+  	                 if (!is.null(shp_b)) {
+  	                   transition_layer <- make_transition2(sf::as_Spatial(shp_b))
+  	                   tr <- transition_layer$transition
+  	                   print("Made transition layer")
+  	                   dist <- NULL
+  	                   shortest_dist(position,
+  	                                 x$installation_name,
+  	                                 rast = world_raster_sub,
+  	                                 tr = tr)
+  	                 }
+  	               })
+  	#message("shortest dist calculated")
+  }
+    if("Velocity_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
+      write(paste0(x$filename[1],
+                   ":  ", " Running velocity check"),
+            file = logfile,
+            append = TRUE)
+    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist)
+    }
+  
+    if("Distance_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
+      write(paste0(x$filename[1],
+                   ":  ", " Running distance check"),
+            file = logfile,
+            append = TRUE)
+      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist)
+    }
 
-			## Calculate time differences between detections (in minutes)
-			time_diff <- as.numeric(difftime(sub$detection_datetime[2:nrow(sub)],
-			                                 sub$detection_datetime[1:(nrow(sub)-1)],
-			                                 tz = "UTC", units = "mins"))
-			temporal_outcome[sel, 1] <-
-			  ifelse(sum(time_diff <= 30) > sum(time_diff >= 720) & nrow(sub) > 1, 1, 2)
-		}
-
-
-		## Distance and Velocity tests
-		position <- data.frame(longitude = c(x$transmitter_deployment_longitude[1], x$longitude),
-		                       latitude = c(x$transmitter_deployment_latitude[1], x$latitude))
-
-		dist <-
-		  shortest_dist(position,
-		                x$installation_name,
-		                rast = Aust_raster,
-		                tr = tr)
-
-		if (length(dist) == 1) {
-		  timediff <- as.numeric(
-		    difftime(
-		      x$transmitter_deployment_datetime,
-		      x$detection_datetime,
-		      tz = "UTC",
-		      units = "secs"
-		    )
-		  )
-		  velocity <- (dist * 1000) / timediff
-
-		  temporal_outcome[2] <- ifelse(velocity <= 10, 1, 2)
-		  temporal_outcome[3] <- ifelse(dist <= 1000, 1, 2)
-
-		} else if (length(dist) > 1) {
-		  dist_next <- c(dist[2:nrow(dist)], NA)
-
-		  time <-
-		    c(x$transmitter_deployment_datetime[1],
-		      x$detection_datetime)
-		  timediff <-
-		    abs(as.numeric(difftime(
-		      time[1:(length(time) - 1)], time[2:length(time)],
-		      tz = "UTC", units = "secs"
-		    )))
-		  timediff_next <- c(timediff[2:length(timediff)], NA)
-
-		  ## Exception to overcome the fact that a same tag may be detected by
-		  ##  two neighbouring stations at the exact same time, thus creating
-		  ##  infinite velocity values
-		  timediff[which(timediff == 0)] <- 1
-		  timediff_next[which(timediff_next == 0)] <- 1
-		  velocity <- (dist * 1000) / timediff
-		  velocity_next <- (dist_next * 1000) / timediff_next
-
-		  ## Velocity test
-		  temporal_outcome[, 2] <-
-		    ifelse(velocity > 10 & velocity_next > 10, 2, 1)
-		  temporal_outcome[1, 2] <- ifelse(velocity[1] > 10, 2, 1)
-		  temporal_outcome[nrow(x), 2] <-
-		    ifelse(velocity[nrow(x)] > 10, 2, 1)
-
-		  ## Distance test
-		  temporal_outcome[, 3] <-
-		    ifelse(dist > 1000 & dist_next > 1000, 2, 1)
-		  temporal_outcome[1, 3] <- ifelse(dist[1] > 1000, 2, 1)
-		  temporal_outcome[nrow(x), 3] <-
-		    ifelse(dist[nrow(x)] > 1000, 2, 1)
-
-		}
-
+		message("Dist/velocity tests done.")
 		## Detection distribution test
-		temporal_outcome[, 4] <- ifelse(is.null(shp_b), 3, 1)
-		if(!is.null(shp_b)) {
-			out <- which(is.na(over(ll, shp_b)))
-			if(length(out) > 0) {
-			  temporal_outcome[x$longitude %in% ll@coords[out, 1] &
-			                     x$latitude %in% ll@coords[out, 2], 4] <- 2
-			}
-		}
+    if("DetectionDistribution_QC" %in% colnames(temporal_outcome) & !is.null(shp_b)) {
+      write(paste0(x$filename[1],
+                   ":  ", " Running detection distribution check."),
+            file = logfile,
+            append = TRUE)
+      temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b)
+    }
 
-		## Distance from release
-		dist_r <- distGeo(cbind(x$transmitter_deployment_longitude[rep(1, nrow(x))],
-		                        x$transmitter_deployment_latitude[rep(1, nrow(x))]),
-		                  cbind(x$longitude, x$latitude)) / 1000 ## return in km
-		temporal_outcome[, 5] <- ifelse(dist_r > 500, 2, 1)
+    if("DistanceRelease_QC" %in% colnames(temporal_outcome))
+    {
+      write(paste0(x$filename[1],
+                   ":  ", " Running distance from release check."),
+            file = logfile,
+            append = TRUE)
+      temporal_outcome <- qc_test_dist_release(x, temporal_outcome)
+    }
+		
+    if("ReleaseDate_QC" %in% colnames(temporal_outcome)) {
+      ## Release date before detection date
+      write(paste0(x$filename[1],
+                   ":  ", " Running release date check."),
+            file = logfile,
+            append = TRUE)
+      temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome)
+    }
 
-		## Release date before detection date
-		release_timediff <- as.numeric(difftime(x$detection_datetime,
-		                                        x$transmitter_deployment_datetime, tz = "UTC",
-		                                        units = "mins"))
-		## -720 minutes (12 h) to take into account potential time zone differences
-		temporal_outcome[which(release_timediff >= (-720)), 6] <- 1
-		temporal_outcome[which(release_timediff < (-720)), 6] <- 2
-
-		## Release location test
-		if(!is.null(shp_b)) {
-			temporal_outcome[, 7] <- ifelse(dist[1] > 500 &
-			                                   sum(is.na(over(ll_r, shp_b))) > 0, 2, 1)
-		} else {
-			temporal_outcome[, 7] <- ifelse(dist[1] > 500, 2, 1)
-		}
-
+    if("ReleaseLocation_QC" %in% colnames(temporal_outcome) & !is.null(dist) & !is.null(shp_b)) {
+      write(paste0(x$filename[1],
+                   ":  ", " Running release location check."),
+            file = logfile,
+            append = TRUE)
+      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r)
+    }
+		## it might be better to keep all tests in temporal_outcome & just ensure
+		##  tests that are turned off return NA values, that way output QC object always
+		##  has same dims - otherwise this will cause IMOS AODN incoming server checks to
+		##  reject QC'd data.
+		
 		## Detection QC
-		ones <- as.numeric(rowSums(temporal_outcome[, c(1:5)] == 1))
-		temporal_outcome[which(ones <= 2), 8] <- 4
-		temporal_outcome[which(ones == 3), 8] <- 3
-		temporal_outcome[which(ones == 4), 8] <- 2
-		temporal_outcome[which(ones == 5), 8] <- 1
-		temporal_outcome$Velocity_QC <- as.numeric(temporal_outcome$Velocity_QC)
-		temporal_outcome$Distance_QC <- as.numeric(temporal_outcome$Distance_QC)
-
+    temporal_outcome <- qc_detection_qc(temporal_outcome, data_format)
+    
 	x <- x %>%
-	  rename(receiver_deployment_longitude = longitude,
+	  dplyr::rename(receiver_deployment_longitude = longitude,
 	         receiver_deployment_latitude = latitude)
 	
+	message("Done and returning")
 	return(bind_cols(x, temporal_outcome))
 
 }

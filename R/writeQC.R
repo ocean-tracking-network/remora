@@ -60,9 +60,9 @@ writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE) {
         write_delim(
           x$QC[[i]],
           file = paste0(file.path(path, files[i]), ".csv"),
-          delim = ";",
+          delim = ",",
           col_names = TRUE,
-          quote_escape = FALSE
+          escape = 'none'
         )
       }
     })

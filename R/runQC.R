@@ -7,13 +7,25 @@
 ##' downloaded from the IMOS-ATF Web App (URL), or have exactly the same
 ##' structure and variable names as the Web App data.
 ##' @param lat.check (logical; default TRUE) test for receiver_deployment_latitudes
-##' in N hemisphere at correct to S hemisphere. Set to FALSE if QC'ing N hemisphere data
+##' in N hemisphere and correct to S hemisphere. Set to FALSE if QC'ing N hemisphere data
+##' @param data_format specify data format as a quoted character string ("imos" or "otn")
+##' @param tests_vector a vector of possible QC tests as quoted character strings.
+##' All eight tests are: "FDA_QC", "Velocity_QC", "Distance_QC", "DetectionDistribution_QC", 
+##' "DistanceRelease_QC", "ReleaseDate_QC", "ReleaseLocation_QC", and "Detection_QC".
+##' The default is to run all tests.
+##' @param shapefile Optional user-specified shapefile defining species range(s).
+##' @param col_spec Optional specification of input detection data column types 
+##' (see `read_csv` for details on col_types).
+##' @param fda_type specify whether to use the time difference (Hoenner et al. 2018)
+##' or the Pincock (Pincock 2012) algorthim for the False Detections test 
+##' (`time_diff` or `pincock`).
 ##' @param .parallel logical; run QC tests in parallel across multiple processors
 ##' (default is FALSE)
 ##' @param .ncores integer; number of cores to run in parallel. If NULL and
 ##' \code{parallel = TRUE} then process will run across all available cores,
 ##' otherwise run across user-specified cores
 ##' @param .progress logical; display QC progress (default is TRUE).
+
 ##'
 ##' @details The QC process merges data from the supplied files downloaded via
 ##' the IMOS-ATF Web App (URL): `IMOS_detections.csv`;
@@ -48,6 +60,10 @@
 ##' @references Hoenner, X et al (2018) Australia’s continental-scale acoustic
 ##' tracking database and its automated quality control process. Scientific Data
 ##' 5, 170206. https://doi.org/10.1038/sdata.2017.206
+##' 
+##' Pincock, DG (2012) False detections: what they are and how to remove them 
+##' from detection data. Amirix Document DOC-004691 Version 03. Amirix Systems Inc., 
+##' Halifax, Nova Scotia. 
 ##'
 ##' @examples
 ##' ## specify files to QC - use supplied example .csv data
@@ -84,6 +100,18 @@
 
 runQC <- function(x,
                   lat.check = TRUE,
+                  data_format = "imos", 
+                  tests_vector = c("FDA_QC",
+                                     "Velocity_QC",
+                                     "Distance_QC",
+                                     "DetectionDistribution_QC",
+                                     "DistanceRelease_QC",
+                                     "ReleaseDate_QC",
+                                     "ReleaseLocation_QC",
+                                     "Detection_QC"), 
+                  shapefile = NULL, 
+                  col_spec = NULL, 
+                  fda_type = "time_diff", #Added by Bruce Delo for pass-through to QC, then to false detections. Lets user decide whether to use remora's time diff method or pincock method.
                    .parallel = FALSE,
                    .ncores = detectCores() - 2,
                    .progress = TRUE) {
@@ -98,14 +126,34 @@ runQC <- function(x,
   write("", file = logfile)
 
   message("Reading data...")
-  all_data <- get_data(
-    det = x$det,
-    rmeta = x$rmeta,
-    tmeta = x$tmeta,
-    meas = x$meas,
-    logfile = logfile
-  )
-
+  ## IDJ: add conditional to use arbitrary or canonical get_data fn
+  all_data <- switch(data_format,
+                     otn = {
+                       get_data_arbitrary(
+                         det = x$det,
+                         rmeta = x$rmeta,
+                         tmeta = x$tmeta,
+                         meas = x$meas,
+                         logfile = logfile,
+                         data_format = "otn",
+                         col_spec = col_spec
+                       )
+                     },
+                     imos = {
+                       get_data(
+                         det = x$det,
+                         rmeta = x$rmeta,
+                         tmeta = x$tmeta,
+                         meas = x$meas,
+                         logfile = logfile
+                       )
+                     })
+  
+  #Set up a raster for the world (temporary while I test the QC functions that require shapefiles to work)
+  #world_raster <- readOGR(dsn = 
+                           # file.path("/Users/bruce/Downloads/Land_Masses_and_Ocean_Islands/Land_Masses_and_Ocean_Islands.shp"),
+                         # verbose = F)
+  
   ## Apply QC tests on detections
   if(.parallel) {
     message("Starting parallel QC...")
@@ -126,10 +174,29 @@ runQC <- function(x,
         cat("\r", "file: ", all_data[[i]]$filename[1], ", ", i, " of ", length(all_data), "    ", sep = "")
         flush.console()
       }
-      try(qc(all_data[[i]], 
-             Lcheck = lat.check, 
-             logfile), silent = TRUE)
-      })
+      
+      if(data_format == "otn") {
+        message("Starting OTN QC")
+        try(qc(all_data[[i]],
+               Lcheck = FALSE,
+               logfile,
+               tests_vector,
+               data_format = "otn",
+               shapefile = shapefile,
+               fda_type = fda_type), 
+            silent = FALSE)
+        
+      } else if (data_format == "imos") {
+        suppressMessages(try(qc(all_data[[i]],
+                                Lcheck = lat.check,
+                                logfile,
+                                tests_vector,
+                                data_format = "imos"),
+                             silent = TRUE)
+        )
+      }
+      
+     })
 
     cat("\n")
   }
@@ -144,18 +211,17 @@ runQC <- function(x,
     xfail <- all_data[fails]
     lapply(1:length(xfail), function(i) {
       write(paste0(xfail[[i]]$filename[1], ":  QC error: ", QC_result[[i]]),
-            file = logfile,
-            append = TRUE
+        file = logfile,
+        append = TRUE
       )
     })
   }
-  
 
   ## notify if any entries in QC logfile
   if(file.size(logfile) > 1) {
-    message("\n Please see ", logfile, " for potential data and/or metadata issues\n")
+    message("\n Please see ", logfile, " for potential data, metadata issues and/or QC error messages\n")
   }
-
+  ## IDJ: modified so fn returns QC results for any tags that did not fail the QC
   tmp <- bind_rows(QC_result[!fails])
   out <- nest_by(tmp, filename, .key = "QC")
   class(out) <- append("remora_QC", class(out))

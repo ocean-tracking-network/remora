@@ -25,6 +25,10 @@
 vignettes/*.html
 vignettes/*.pdf
 
+#cached files
+vignettes/imos.cache/
+vignettes/rosm.cache/
+
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
 
@@ -47,5 +51,8 @@ QC_logfile.txt
 /doc/
 /Meta/
 docs
+testDataOTN/
+/*.png
+/*.zip
 /data_testing/
 inst/ALA_Shapefile/.DS_Store

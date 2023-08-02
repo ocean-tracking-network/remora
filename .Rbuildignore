@@ -8,4 +8,6 @@
 ^docs$
 ^pkgdown$
 ^index\.md$
+^testDataOTN$
+^OTN\_example\_QC\.R$
 ^data\_testing$

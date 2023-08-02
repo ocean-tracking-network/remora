@@ -92,9 +92,23 @@
 ##' @export
 ##'
 
-extractEnv <- function(df, X = "longitude", Y = "latitude", datetime = "detection_timestamp", env_var, folder_name = NULL, 
-                       verbose = TRUE, cache_layers = TRUE, crop_layers = TRUE, full_timeperiod = FALSE, 
-                       fill_gaps = FALSE, buffer = NULL, output_format = "raster", .parallel = TRUE, .ncores = NULL){
+extractEnv <-
+  function(df,
+           X = "longitude",
+           Y = "latitude",
+           datetime = "detection_timestamp",
+           env_var,
+           folder_name = NULL,
+           verbose = TRUE,
+           cache_layers = TRUE,
+           crop_layers = TRUE,
+           full_timeperiod = FALSE,
+           fill_gaps = FALSE,
+           buffer = NULL,
+           output_format = "raster",
+           .parallel = TRUE,
+           .ncores = NULL) {
+    
   
   ## Initial checks of parameters
   if(!X %in% colnames(df)){stop("Cannot find X coordinate in dataset, provide column name where variable can be found")}
@@ -154,11 +168,12 @@ extractEnv <- function(df, X = "longitude", Y = "latitude", datetime = "detectio
     message("Accessing and downloading IMOS environmental variable: ", env_var)
   }
   
+  #These were changed from pull_env to pull_env_arbitrary while I was working on this -- BD
   if(.parallel){
     with_progress(
       try(
         suppressWarnings(
-          env_stack <- .pull_env(dates = dates, study_extent = study_extent,
+          env_stack <- pull_env_arbitrary(study_extent = study_extent,
                                  var_name = env_var, .cache = cache_layers,
                                  folder_name = folder_name, .crop = crop_layers,
                                  .output_format = output_format, verbose = verbose,
@@ -167,7 +182,7 @@ extractEnv <- function(df, X = "longitude", Y = "latitude", datetime = "detectio
   } else {
     try(
       suppressWarnings(
-        env_stack <- .pull_env(dates = dates, study_extent = study_extent, 
+        env_stack <- pull_env_arbitrary(study_extent = study_extent, 
                                var_name = env_var, .cache = cache_layers, 
                                folder_name = folder_name, .crop = crop_layers,
                                .output_format = output_format, verbose = verbose,
