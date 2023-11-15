@@ -55,4 +55,7 @@ testDataOTN/
 /*.png
 /*.zip
 /data_testing/
+imos.cache
+*_errorlog.txt
+Processed_data.csv
 inst/ALA_Shapefile/.DS_Store
