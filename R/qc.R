@@ -14,10 +14,11 @@
 ##'
 ##' @return temporal_outcome is a list with each element corresponding to a QC'd tag detection file
 ##'
-##' @importFrom dplyr '%>%' bind_cols
+##' @importFrom dplyr '%>%' bind_cols\
 ##' @importFrom sp 'coordinates<-' 'proj4string<-' 'proj4string' over SpatialPoints
 ##' @importFrom geosphere distGeo
-##' @importFrom glatos make_transition2
+##' @importFrom glatos make_transition2\
+##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates\
 ##'
 ##' @keywords internal
 ##'
@@ -211,6 +212,26 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	                 }
   	               })
   	#message("shortest dist calculated")
+
+  ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
+  ##  coordinates to SpatialPoints to test subsequently whether or not detections 
+  ##  are in distribution range
+  if (!is.null(shp_b)) {
+    ll <- unique(data.frame(x$longitude, x$latitude)) %>%
+      st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
+
+    # coordinates(ll) <- ~ x.longitude + x.latitude
+    # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
+
+    if (!is.na(x$transmitter_deployment_longitude[1])) {
+      ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
+                         lat = x$transmitter_deployment_latitude[1]) %>%
+        st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
+      
+      # coordinates(ll_r) <-
+      #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
+      # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
+    }
   }
     if("Velocity_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
       write(paste0(x$filename[1],
@@ -267,6 +288,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
 		##  tests that are turned off return NA values, that way output QC object always
 		##  has same dims - otherwise this will cause IMOS AODN incoming server checks to
 		##  reject QC'd data.
+
 		
 		## Detection QC
     temporal_outcome <- qc_detection_qc(temporal_outcome, data_format)
