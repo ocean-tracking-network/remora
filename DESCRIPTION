@@ -50,7 +50,7 @@ Authors@R:
            person(given = "Jon",
            family = "Pye",
            role = "ctb",
-           email = "jon.pye@gmail.com")),
+           email = "jon.pye@gmail.com"),
            person(given = "Yuri",
            family = "Niella",
            role = c("aut", "ctb"),
