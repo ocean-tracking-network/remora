@@ -50,7 +50,7 @@ Authors@R:
            person(given = "Jon",
            family = "Pye",
            role = "ctb",
-           email = "jon.pye@gmail.com"))
+           email = "jon.pye@gmail.com")),
            person(given = "Yuri",
            family = "Niella",
            role = c("aut", "ctb"),
@@ -102,7 +102,8 @@ Imports:
     xml2,
     htmlwidgets,
     terra (>= 1.7-30),
-    geodist (>= 0.0.8)
+    geodist (>= 0.0.8),
+    surimi
 Suggests: 
     colormap,
     crosstalk,
@@ -129,6 +130,6 @@ Depends: R (>= 3.6.0)
 SystemRequirements: GDAL (>= 3.6.2), GEOS (>= 3.11.0), PROJ (>= 9.2.0)
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1.9000
 Config/testthat/edition: 3
 Config/testthat/parallel: true
