@@ -25,7 +25,7 @@
 ##' @keywords internal
 ##'
 
-shortest_dist2 <- function(position, inst, raster = NULL, tr) {
+shortest_dist <- function(position, inst, raster = NULL, tr) {
   if (is.null(raster)) {
     raster <- rast(system.file("extdata/asr.tif", package = "remora"))
   }
