@@ -4,14 +4,12 @@
 \alias{getBuffer}
 \title{Create Buffer to Crop Shapefile}
 \usage{
-getBuffer(detection_extract, otn_test_data, buffer_percentage = 0.15)
+getBuffer(detection_extract, buffer_percentage = 0.15)
 }
 \arguments{
-\item{detection_extract}{...}
+\item{detection_extract}{A detection extract file containing a latitude/longitude column.}
 
-\item{otn_test_data}{we want this as a proper input variable, not a test data set}
-
-\item{buffer_percentage}{...}
+\item{buffer_percentage}{The percentage (between 0 and 1) to add to the lat/lon of the bounding box, in case the user wants more space around their area.}
 }
 \value{
 returns a buffer as a 4-element vector
