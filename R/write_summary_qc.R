@@ -87,7 +87,3 @@ write_summary <- function(x, path = NULL) {
               escape = 'none')
 
 }
-
-
-
-

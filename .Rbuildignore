@@ -23,3 +23,4 @@
 ^rs\_current\_errorlog\.txt$
 ^QC\_errorlog\.txt$
 ^Processed\_data\.csv$
+^OTN\_example\_QC\.R$

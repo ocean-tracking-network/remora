@@ -14,11 +14,11 @@
 ##'
 ##' @return temporal_outcome is a list with each element corresponding to a QC'd tag detection file
 ##'
-##' @importFrom dplyr '%>%' bind_cols\
+##' @importFrom dplyr '%>%' bind_cols
 ##' @importFrom sp 'coordinates<-' 'proj4string<-' 'proj4string' over SpatialPoints
 ##' @importFrom geosphere distGeo
-##' @importFrom glatos make_transition2\
-##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates\
+##' @importFrom glatos make_transition2
+##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates
 ##'
 ##' @keywords internal
 ##'
@@ -300,4 +300,5 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
 	message("Done and returning")
 	return(bind_cols(x, temporal_outcome))
 
+  }
 }
