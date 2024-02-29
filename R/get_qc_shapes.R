@@ -4,23 +4,22 @@
 ##' 
 ##' @param detection_extract Either a path to a detection extract file, or a dataframe representing the detection extract.
 ##' @param shapefile_path Path to an OBIS occurrence file from which a shapefile can be derived with getDynamicAlphaHull
-##' @param worldimage ...
+##' @param crop Whether to use the entire shapefile or crop it to the boundaries derived from the detection data. Defaults to True.
 ##' 
 ##' @return a list of cropped shapefile, transition layer, and world raster
 ##' 
 ##' @importFrom sf st_crop st_bbox
 ##' @importFrom raster raster crop
-##' @importFrom glatos make_transition2
+##' @importFrom rangeBuilder getDynamicAlphaHull
 ##' 
 ##' @keywords internal
 
 get_qc_shapes <- function(detection_extract,
                           shapefile_path,
-                          crop = FALSE,
-                          worldimage = "./testDataOTN/NE2_50M_SR.tif")  {
+                          crop = TRUE)  {
   
   #If the detection extract has been passed as a filepath rather than a dataframe, then just read it in. 
-  if (is.character(detection_extract)) {
+  if (file.exists(detection_extract)) {
     detection_extract <- read_csv(detection_extract)
   }
   
@@ -51,20 +50,4 @@ get_qc_shapes <- function(detection_extract,
   }
   
   return (species_polygon)
-  
-  #These are leftover from the OG version of this code; they gotta get cleaned up and fixed but the above works pretty OK so we'll
-  #stick with it and use it for what it is.
-  #Crop the world raster
-  #if(file.exists(worldimage)) {
-  #  world_raster <- raster(worldimage)
-  #}
-  #else {
-  #  world_raster <- worldimage
-  #}
-  
-  #world_raster_crop <- crop(world_raster, shapefile_crop)
-  
-  #return(
-  #  list(shapefile_crop, transition_layer, world_raster_crop)
-  #)
 }
