@@ -375,7 +375,6 @@ get_data_arbitrary <- function(det=NULL,
     lapply(., function(x)
       x[order(x$detection_datetime),])
   
-  View(dd.lst)
   ## check which are dual sensor tags & name mono & dual tag data sets appropriately
   dual_tags <-
     which(as.vector(sapply(dd.lst, function(x)
