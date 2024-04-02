@@ -223,6 +223,7 @@ runQC <- function(x,
   }
   ## IDJ: modified so fn returns QC results for any tags that did not fail the QC
   tmp <- bind_rows(QC_result[!fails])
+  View(tmp)
   out <- nest_by(tmp, filename, .key = "QC")
   class(out) <- append("remora_QC", class(out))
 
