@@ -212,6 +212,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	                 }
   	               })
   	#message("shortest dist calculated")
+  }
 
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
   ##  coordinates to SpatialPoints to test subsequently whether or not detections 
@@ -299,6 +300,4 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
 	
 	message("Done and returning")
 	return(bind_cols(x, temporal_outcome))
-
-  }
 }
