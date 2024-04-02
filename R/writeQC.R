@@ -10,6 +10,7 @@
 ##' `QCsummary.csv` is written to the specified \code{path}
 ##' @param csv whether to generate the individual \code{.csv} files. If TRUE (default) then
 ##' each file is written to the specified \code{path}
+##' @param aggregate whether to write individual csv files or one big one containing all tag information. If TRUE, writes only one file.
 ##'
 ##' @details takes a `remora_QC` nested tibble and writes .csv files
 ##' corresponding to each row of the nested tibble. A summary of the QC process
@@ -41,7 +42,7 @@
 ##'
 ##' @export
 
-writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE) {
+writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE, aggregate = FALSE) {
 
   if(is.null(path)) {
     path <- getwd()
@@ -50,6 +51,8 @@ writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE) {
   if(!inherits(x, "remora_QC")) stop("x must be a nested tibble with class `remora_QC`")
   
   files <- x$filename
+  #Create an empty dataframe to hold our aggregated QC info. 
+  aggregatedQC <- data.frame(matrix(ncol = 0, nrow = 0))
 
   if (csv) {
     message("Writing all QC output files...\n")
@@ -57,13 +60,31 @@ writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE) {
       ## check whether shortest_dist.R produced a correct result,
       ##   if so then write the temporal_outcome file
       if (is.data.frame(x[i, ])) {
-        write_delim(
-          x$QC[[i]],
-          file = paste0(file.path(path, files[i]), ".csv"),
-          delim = ",",
-          col_names = TRUE,
-          escape = 'none'
-        )
+        if(!aggregate) {
+          write_delim(
+            x$QC[[i]],
+            file = paste0(file.path(path, files[i]), ".csv"),
+            delim = ",",
+            col_names = TRUE,
+            escape = 'none'
+          )
+        }
+        else {
+          if (i==1) {
+            include_cols = TRUE
+          }
+          else {
+            include_cols = FALSE
+          }
+          write_delim(
+            x$QC[[i]],
+            file = paste0(file.path(path, "aggregatedQC"), ".csv"),
+            delim = ",",
+            col_names = include_cols,
+            escape = 'none',
+            append = TRUE
+          )
+        }
       }
     })
   }

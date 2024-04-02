@@ -5,11 +5,11 @@
 #install.packages('sp')
 #install.packages('raster')
 #install.packages('stars')
-devtools::install_github('ocean-tracking-network/remora@get_data_qc', force=TRUE)
+devtools::install_github('ocean-tracking-network/remora@roxygen_fixes', force=TRUE)
 
 library(readr)
+library(terra)
 library(tidyverse)
-library(remora)
 library(sf)
 library(sp)
 library(raster)
@@ -18,8 +18,14 @@ library(glatos)
 library(utils)
 library(geosphere)
 library(rangeBuilder)
+library(remora)
 
 setwd('/Users/bruce/Work/remora')
+
+install.packages('devtools')
+library(devtools)
+devtools::install_github('klutometis/roxygen')
+library(roxygen2)
 
 download.file("https://members.oceantrack.org/data/share/testdataotn.zip/@@download/file/testDataOTN.zip", "./testDataOTN.zip")
 unzip("testDataOTN.zip")
@@ -88,12 +94,12 @@ world_raster_sub[world_raster_sub == 251] <- 1
 #At this time, however, the plotting function requires Release Location to run properly. You can run these tests if you want, but in an OTN data format
 #they will not be counted towards final QC aggregation. 
 tests_vector <-  c("FDA_QC",
-                   "Velocity_QC",
-                   "Distance_QC",
-                   "DetectionDistribution_QC",
+                   #"Velocity_QC",
+                   #"Distance_QC",
+                   #"DetectionDistribution_QC",
                    "DistanceRelease_QC",
-                   #"ReleaseDate_QC",
-                   "ReleaseLocation_QC",
+                   "ReleaseDate_QC",
+                   #"ReleaseLocation_QC",
                    "Detection_QC")
 
 #In a perfect world, when you run this code, you will get output with QC attached. 
@@ -112,13 +118,15 @@ shapefile_crop <- sf::st_crop(sps1Poly[[1]],  xmin=minLon, ymin=minLat, xmax=max
 otn_test_tag_qc <- runQC(otn_files, 
                          data_format = "otn", 
                          tests_vector = tests_vector, 
-                         shapefile = shapefile_crop, 
+                         #shapefile = sps1Poly[[1]], 
                          col_spec = NULL, 
                          fda_type = "pincock", 
                          .parallel = FALSE, .progress = TRUE)
 
 plotQC(otn_test_tag_qc, path = "cobiaOutput", species_range=sps1Poly[[1]])
-writeQC(otn_test_tag_qc, path = "cobiaOutput/summary")
+writeQC(otn_test_tag_qc, path = "cobiaOutput/export", summary = FALSE, aggregate = TRUE)
+
+cobia_filtered <- otn_test_tag_qc %>% filter(length(QC[[1]]) > 1)
 
 View(otn_test_tag_qc)
 
@@ -128,7 +136,7 @@ proj4string(latlon_test) <- CRS("+proj=longlat +datum=WGS84")
 world_shapefile_crop <- rasterToPolygons(world_raster_sub)
 sp::over(latlon_test, world_shapefile_crop)
 
-#cobia_subset_likely <- filter(otn_test_tag_qc, (QC$Detection_QC == 3))
+cobia_subset_likely <- filter(otn_test_tag_qc, (QC$Detection_QC == 3))
 
 
 #qc_shapes_test <- get_qc_shapes(otn_test_data, sps1Poly[1])
