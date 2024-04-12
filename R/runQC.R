@@ -112,6 +112,7 @@ runQC <- function(x,
                   shapefile = NULL, 
                   col_spec = NULL, 
                   fda_type = "time_diff", #Added by Bruce Delo for pass-through to QC, then to false detections. Lets user decide whether to use remora's time diff method or pincock method.
+                  rollup = FALSE, #Added by Bruce Delo, invokes Surimi's rollup function to return QC columns attached to detection extract.
                    .parallel = FALSE,
                    .ncores = detectCores() - 2,
                    .progress = TRUE) {
@@ -236,5 +237,13 @@ runQC <- function(x,
             immediate. = TRUE)
   }
 
+  if(rollup = TRUE) {
+    #Start by writing out the QC
+    #Don't alter the path, so then we can assume it based on where we're at. 
+    writeQC(out, aggregate = TRUE)
+    rolled_output <- surimi::rollup(x$det, "aggregatedQC.csv")
+    write.csv(rolled_output, path="rolled_output.csv")
+  }
+  
   return(out)
 }
