@@ -237,7 +237,7 @@ runQC <- function(x,
             immediate. = TRUE)
   }
 
-  if(rollup = TRUE) {
+  if(rollup == TRUE) {
     #Start by writing out the QC
     #Don't alter the path, so then we can assume it based on where we're at. 
     writeQC(out, aggregate = TRUE)
