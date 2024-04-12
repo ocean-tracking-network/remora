@@ -242,7 +242,7 @@ runQC <- function(x,
     #Don't alter the path, so then we can assume it based on where we're at. 
     writeQC(out, aggregate = TRUE)
     rolled_output <- surimi::rollup(x$det, "aggregatedQC.csv")
-    write.csv(rolled_output, path="rolled_output.csv")
+    write.csv(rolled_output, file="rolled_output.csv")
   }
   
   return(out)
