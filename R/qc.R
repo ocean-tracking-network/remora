@@ -34,7 +34,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                                                            "Detection_QC"),
                data_format = "imos",
                shapefile = NULL,
-               fda_type = "time-diff") {
+               fda_type = "time-diff",
+               dist_threshold = 500) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
   temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
@@ -266,7 +267,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance from release check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_dist_release(x, temporal_outcome)
+      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold)
     }
 		
     if("ReleaseDate_QC" %in% colnames(temporal_outcome)) {
