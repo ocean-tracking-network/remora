@@ -27,7 +27,7 @@ createPolygon <- function(occurrenceFile,
                           fraction = 0.70, 
                           buffer = 1000, 
                           partCount = 20,  
-                          coordHeaders = c("decimalLongitude", "decimalLatitude"), 
+                          coordHeaders = c("decimallongitude", "decimallatitude"), 
                           clipToCoast = "aquatic",
                           returnWhole = FALSE) {
   
@@ -39,9 +39,9 @@ createPolygon <- function(occurrenceFile,
   #The function getDynamicAlphaHull integrates the function ahull, which calculates the α-convex hull of a given sample of points in the plane for α >0. 
   #It also includes other parameters of relevance, like the minimum fraction of occurrences that must be included in a polygon, the maximum number of disjunct polygons allowed, and setting a buffer zone.
   
-  if("flags" %in% colnames(occurrence)) {
-    occurrence <- occurrence %>% filter(is.na(flags))
-  }
+  #if("flags" %in% colnames(occurrence)) {
+  # occurrence <- occurrence %>% filter(is.na(flags))
+  #}
   
   #Using the function getDynamicAlphaHull to generate a polygon based on occurrence data. In this case, the parameters represent:
   #fraction: the minimum fraction of occurrences that must be included in the polygon - 70%

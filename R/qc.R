@@ -195,7 +195,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
   	dist <- switch(data_format,
   	               imos = {
-  	                 shortest_dist(position,
+  	                 shortest_dist2(position,
   	                               x$installation_name,
   	                               rast = Aust_raster,
   	                               tr = tr)
@@ -206,7 +206,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	                   tr <- transition_layer$transition
   	                   print("Made transition layer")
   	                   dist <- NULL
-  	                   shortest_dist(position,
+  	                   shortest_dist2(position,
   	                                 x$installation_name,
   	                                 rast = world_raster_sub,
   	                                 tr = tr)
