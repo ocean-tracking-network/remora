@@ -207,10 +207,11 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	               },
   	               otn = {
   	                 if (!is.null(shp_b)) {
-  	                   shortest_dist2(position,
-  	                                 x$installation_name,
-  	                                 rast = world_raster_sub,
-  	                                 tr = tr)
+  	                   dist <- NULL
+  	                   #shortest_dist2(position,
+  	                                 #x$installation_name,
+  	                                 #rast = world_raster_sub,
+  	                                 #tr = tr)
   	                 }
   	               })
   	#message("shortest dist calculated")
