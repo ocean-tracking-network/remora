@@ -198,22 +198,20 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	  tr <- transition_layer$transition
   	  print("Made transition layer")
   	}
-  	dist <- NULL
-  	# dist <- switch(data_format,
-  	#                imos = {
-  	#                  shortest_dist2(position,
-  	#                                x$installation_name,
-  	#                                rast = Aust_raster,
-  	#                                tr = tr)
-  	#                },
-  	#                otn = {
-  	#                    NULL
-  	#                    #shortest_dist2(position,
-  	#                                  #x$installation_name,
-  	#                                  #rast = world_raster_sub,
-  	#                                  #tr = tr)
-  	#                })
-  	#message("shortest dist calculated")
+  	dist <- switch(data_format,
+  	               imos = {
+  	                 shortest_dist2(position,
+  	                               x$installation_name,
+  	                               rast = Aust_raster,
+  	                               tr = tr)
+  	               },
+  	               otn = {
+  	                   shortest_dist2(position,
+  	                                 x$installation_name,
+  	                                 rast = world_raster_sub,
+  	                                 tr = tr)
+  	               })
+  	message("shortest dist calculated")
   }
 
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
