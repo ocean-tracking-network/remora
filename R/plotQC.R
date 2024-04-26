@@ -36,7 +36,7 @@
 ##'
 ##' @export
 
-plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE) {
+plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp = NULL) {
 
   if(!inherits(x, "remora_QC")) 
     stop("\033[31;1mx must be a nested tibble with class `remora_QC`\033[0m")
@@ -49,24 +49,29 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE) {
     distinct(.keep_all = TRUE)
 	
 	for (i in 1:nrow(species)){
-		expert_shp <-
-		  try(get_expert_distribution_shp_CAAB(CAAB_species_id = species$CAAB_species_id[i], 
-		                                       spe = species$species_scientific_name[i]), 
-		      silent = TRUE)
-
-		if(is.null(class(expert_shp))) {
-			print(paste('No expert distribution shapefile available for species ',
-			            caab_dump$COMMON_NAME[which(caab_dump$SPCODE == CAAB_id)],
-			            ' (',
-			            caab_dump$SCIENTIFIC_NAME[which(caab_dump$SPCODE == CAAB_id)],
-			            ', ',
-			            caab_dump$AUTHORITY[which(caab_dump$SPCODE == CAAB_id)], ')',
-			            sep = ''))
-		} else if (inherits(expert_shp, "try-error")) {
-		  cat("\033[0;34mCould not download shapefile, mapping without species expert distribution\033[0m")
-		  expert_shp <- NULL
-		}
-
+	  if(!is.null(distribution_shp)) {
+	    expert_shp <- distribution_shp
+	  }
+	  else {
+	    expert_shp <-
+	      try(get_expert_distribution_shp_CAAB(CAAB_species_id = species$CAAB_species_id[i], 
+	                                           spe = species$species_scientific_name[i]), 
+	          silent = TRUE)
+	    
+	    if(is.null(class(expert_shp))) {
+	      print(paste('No expert distribution shapefile available for species ',
+	                  caab_dump$COMMON_NAME[which(caab_dump$SPCODE == CAAB_id)],
+	                  ' (',
+	                  caab_dump$SCIENTIFIC_NAME[which(caab_dump$SPCODE == CAAB_id)],
+	                  ', ',
+	                  caab_dump$AUTHORITY[which(caab_dump$SPCODE == CAAB_id)], ')',
+	                  sep = ''))
+	    } else if (inherits(expert_shp, "try-error")) {
+	      cat("\033[0;34mCould not download shapefile, mapping without species expert distribution\033[0m")
+	      expert_shp <- NULL
+	    }
+	  }
+		
 		data <- subset(QCdata, CAAB_species_id == species$CAAB_species_id[i])
 		releases <- with(data, unique(data.frame(transmitter_id, 
 		                                         tag_id,
