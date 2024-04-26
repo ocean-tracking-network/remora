@@ -9,7 +9,7 @@ createPolygon(
   fraction = 0.7,
   buffer = 1000,
   partCount = 20,
-  coordHeaders = c("decimalLongitude", "decimalLatitude"),
+  coordHeaders = c("decimallongitude", "decimallatitude"),
   clipToCoast = "aquatic",
   returnWhole = FALSE
 )
