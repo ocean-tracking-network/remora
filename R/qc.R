@@ -193,6 +193,11 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     ## IDJ: add conditional on data_format
     ## BD: added a check to not run the OTN version of this if shp_b is null
   	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
+  	if(data_format == "otn") {
+  	  transition_layer <- make_transition2(sf::as_Spatial(shp_b))
+  	  tr <- transition_layer$transition
+  	  print("Made transition layer")
+  	}
   	dist <- switch(data_format,
   	               imos = {
   	                 shortest_dist2(position,
@@ -202,10 +207,6 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	               },
   	               otn = {
   	                 if (!is.null(shp_b)) {
-  	                   transition_layer <- make_transition2(sf::as_Spatial(shp_b))
-  	                   tr <- transition_layer$transition
-  	                   print("Made transition layer")
-  	                   dist <- NULL
   	                   shortest_dist2(position,
   	                                 x$installation_name,
   	                                 rast = world_raster_sub,
