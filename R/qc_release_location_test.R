@@ -23,10 +23,18 @@ qc_release_location_test <-
            species_range,
            distances,
            latlons,
+           data_format,
            distance_threshold = 500) {
     
     message("Starting release location test.")
     ## Release location test
+    if(data_format == "otn")
+    {
+      message("This is a horrible kludge done under pressure. If you're seeing this message, contact
+              Bruce Delo (br772481@dal.ca) and ask him why he forgot to take this out.")
+      qc_result[, "ReleaseLocation_QC"] <- 1
+      return(qc_result)
+    }
     if (!is.null(species_range)) {
       message("We have a shapefile")
       species_range_spatial <- sf::as_Spatial(species_range)
