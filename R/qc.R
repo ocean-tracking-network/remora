@@ -198,22 +198,21 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	  tr <- transition_layer$transition
   	  print("Made transition layer")
   	}
-  	dist <- switch(data_format,
-  	               imos = {
-  	                 shortest_dist2(position,
-  	                               x$installation_name,
-  	                               rast = Aust_raster,
-  	                               tr = tr)
-  	               },
-  	               otn = {
-  	                 if (!is.null(shp_b)) {
-  	                   dist <- NULL
-  	                   #shortest_dist2(position,
-  	                                 #x$installation_name,
-  	                                 #rast = world_raster_sub,
-  	                                 #tr = tr)
-  	                 }
-  	               })
+  	dist <- NULL
+  	# dist <- switch(data_format,
+  	#                imos = {
+  	#                  shortest_dist2(position,
+  	#                                x$installation_name,
+  	#                                rast = Aust_raster,
+  	#                                tr = tr)
+  	#                },
+  	#                otn = {
+  	#                    NULL
+  	#                    #shortest_dist2(position,
+  	#                                  #x$installation_name,
+  	#                                  #rast = world_raster_sub,
+  	#                                  #tr = tr)
+  	#                })
   	#message("shortest dist calculated")
   }
 
