@@ -12,7 +12,8 @@ qc(
     "DistanceRelease_QC", "ReleaseDate_QC", "ReleaseLocation_QC", "Detection_QC"),
   data_format = "imos",
   shapefile = NULL,
-  fda_type = "time-diff"
+  fda_type = "time-diff",
+  dist_threshold = 500
 )
 }
 \arguments{

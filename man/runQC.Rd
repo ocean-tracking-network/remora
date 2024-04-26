@@ -13,6 +13,8 @@ runQC(
   shapefile = NULL,
   col_spec = NULL,
   fda_type = "time_diff",
+  rollup = FALSE,
+  distance_threshold = 500,
   .parallel = FALSE,
   .ncores = detectCores() - 2,
   .progress = TRUE

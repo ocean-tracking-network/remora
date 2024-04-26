@@ -11,11 +11,10 @@
 ##' @param coordHeaders same as Fraction
 ##' @param clipToCoast same as fraction
 ##' 
-##' 
 ##' @return The output from getDynamicAlphaHull, which contains a polygon and alpha channel. 
 ##' 
 ##' @importFrom readr read_csv
-##' @importFrom rangebuilder getDynamicAlphaHull
+##' @importFrom rangeBuilder getDynamicAlphaHull
 ##' @export
 
 getSpeciesRangePolygon <- function(
