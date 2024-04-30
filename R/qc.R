@@ -198,20 +198,20 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	  tr <- transition_layer$transition
   	  print("Made transition layer")
   	}
-  	# dist <- switch(data_format,
-  	#                imos = {
-  	#                  shortest_dist2(position,
-  	#                                x$installation_name,
-  	#                                rast = Aust_raster,
-  	#                                tr = tr)
-  	#                },
-  	#                otn = {
-  	#                    shortest_dist2(position,
-  	#                                  x$installation_name,
-  	#                                  rast = world_raster_sub,
-  	#                                  tr = tr)
-  	#                })
-  	# message("shortest dist calculated")
+  	dist <- switch(data_format,
+  	               imos = {
+  	                 shortest_dist2(position,
+  	                               x$installation_name,
+  	                               rast = Aust_raster,
+  	                               tr = tr)
+  	               },
+  	               otn = {
+  	                   shortest_dist2(position,
+  	                                 x$installation_name,
+  	                                 rast = world_raster_sub,
+  	                                 tr = tr)
+  	               })
+  	message("shortest dist calculated")
   }
 
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
@@ -278,7 +278,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
       temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome)
     }
 
-    if("ReleaseLocation_QC" %in% colnames(temporal_outcome)) { # & !is.null(dist) & !is.null(shp_b)) {
+    if("ReleaseLocation_QC" %in% colnames(temporal_outcome)) & !is.null(dist) & !is.null(shp_b)) {
       write(paste0(x$filename[1],
                    ":  ", " Running release location check."),
             file = logfile,
