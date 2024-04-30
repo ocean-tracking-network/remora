@@ -24,8 +24,8 @@ qc_test_det_distro <- function(data,
   
   #Make a spatial object out of the lat/lon. These steps may not be necessary when running the IMOS version. Also
   #gotta find a way around that hardcoding. 
-  #coordinates(latlons) <- c("x.longitude", "x.latitude")
-  #proj4string(latlons) <- CRS("+proj=longlat +datum=WGS84")
+  coordinates(latlons) <- c("x.longitude", "x.latitude")
+  proj4string(latlons) <- CRS("+proj=longlat +datum=WGS84")
   if(!is.null(species_range)) {
     print("Need to do some debug in det distro")
     print(over(latlons, as_Spatial(species_range)))
