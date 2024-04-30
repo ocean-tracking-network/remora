@@ -218,23 +218,25 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
   ##  coordinates to SpatialPoints to test subsequently whether or not detections 
   ##  are in distribution range
-  if (!is.null(shp_b)) {
-    ll <- unique(data.frame(x$longitude, x$latitude)) %>%
-      st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
-
-    # coordinates(ll) <- ~ x.longitude + x.latitude
-    # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
-
-    if (!is.na(x$transmitter_deployment_longitude[1])) {
-      ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
-                         lat = x$transmitter_deployment_latitude[1]) %>%
-        st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
-      
-      # coordinates(ll_r) <-
-      #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
-      # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
-    }
-  }
+  
+  ##Commenting out since we're doing this above. Testing to see if I'm accidentally superseding myself., 
+  # if (!is.null(shp_b)) {
+  #   ll <- unique(data.frame(x$longitude, x$latitude)) %>%
+  #     st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
+  # 
+  #   # coordinates(ll) <- ~ x.longitude + x.latitude
+  #   # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
+  # 
+  #   if (!is.na(x$transmitter_deployment_longitude[1])) {
+  #     ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
+  #                        lat = x$transmitter_deployment_latitude[1]) %>%
+  #       st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
+  #     
+  #     # coordinates(ll_r) <-
+  #     #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
+  #     # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
+  #   }
+  # }
     if("Velocity_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
       write(paste0(x$filename[1],
                    ":  ", " Running velocity check"),
