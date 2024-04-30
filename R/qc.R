@@ -35,7 +35,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                data_format = "imos",
                shapefile = NULL,
                fda_type = "time-diff",
-               dist_threshold = 500) {
+               dist_threshold = 500,
+               world_raster = NULL) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
   temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
@@ -208,7 +209,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	               otn = {
   	                   shortest_dist2(position,
   	                                 x$installation_name,
-  	                                 rast = world_raster_sub,
+  	                                 rast = world_raster,
   	                                 tr = tr)
   	               })
   	message("shortest dist calculated")
