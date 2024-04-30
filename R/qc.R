@@ -278,7 +278,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
       temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome)
     }
 
-    if("ReleaseLocation_QC" %in% colnames(temporal_outcome)) & !is.null(dist) & !is.null(shp_b)) {
+    if("ReleaseLocation_QC" %in% colnames(temporal_outcome) & !is.null(dist) & !is.null(shp_b)) {
       write(paste0(x$filename[1],
                    ":  ", " Running release location check."),
             file = logfile,
