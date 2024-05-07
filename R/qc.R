@@ -14,10 +14,10 @@
 ##'
 ##' @return temporal_outcome is a list with each element corresponding to a QC'd tag detection file
 ##'
-##' @importFrom dplyr '%>%' bind_cols
 ##' @importFrom sp 'coordinates<-' 'proj4string<-' 'proj4string' over SpatialPoints
 ##' @importFrom geosphere distGeo
 ##' @importFrom glatos make_transition2
+##' @importFrom dplyr %>% bind_cols
 ##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates
 ##'
 ##' @keywords internal
@@ -160,6 +160,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
           append = TRUE)
     
     temporal_outcome <- qc_false_detection_test(x, temporal_outcome, type = fda_type)
+
     write(paste0(x$filename[1],
                  ":  ", " False detection test done."),
           file = logfile,
@@ -216,7 +217,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	               })
   	#message("shortest dist calculated")
   }
-
+  
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
   ##  coordinates to SpatialPoints to test subsequently whether or not detections 
   ##  are in distribution range
@@ -254,6 +255,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     }
 
 		message("Dist/velocity tests done.")
+
 		## Detection distribution test
     if("DetectionDistribution_QC" %in% colnames(temporal_outcome) & !is.null(shp_b)) {
       write(paste0(x$filename[1],

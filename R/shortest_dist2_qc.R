@@ -38,18 +38,41 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
   pts1_o <- pts1 <- with(position, cbind(x = longitude[1:(n - 1)],
                                          y = latitude[1:(n - 1)]))
   
+  
   inst1 <- lag(inst)
   inst2 <- inst
   
   mvmts <- unique(cbind(inst1, pts1, inst2, pts2))
-  pts1 <- cbind(mvmts[, 2:3]) %>% apply(., 2, as.numeric)
-  pts1.sf <- pts1 %>%
-    as.data.frame() %>%
-    st_as_sf(coords = c("x", "y"), crs = 4326)
-  pts2 <- cbind(mvmts[, 5:6]) %>% apply(., 2, as.numeric)
-  pts2.sf <- pts2 %>%
-    as.data.frame() %>%
-    st_as_sf(coords = c("x", "y"), crs = 4326)
+  
+  
+  
+  if(length(inst) > 1) {
+    pts1 <- cbind(mvmts[, 2:3]) %>% apply(., 2, as.numeric)
+    pts1.sf <- pts1 %>%
+      as.data.frame() %>% 
+      st_as_sf(coords = c("x", "y"), crs = 4326)
+    
+    pts2 <- cbind(mvmts[, 5:6]) %>% apply(., 2, as.numeric)
+    pts2.sf <- pts2 %>%
+      as.data.frame() %>%
+      st_as_sf(coords = c("x", "y"), crs = 4326)
+    
+  } else if (length(inst) == 1) {
+    pts1 <- t(cbind(mvmts[, 2:3]) %>% apply(., 2, as.numeric))
+    dimnames(pts1) <- list(NULL, c("x","y"))
+    pts1.sf <- pts1 %>%
+      as.data.frame() %>% 
+#      rename(x = V1, y = V2) %>%
+      st_as_sf(coords = c("x", "y"), crs = 4326)
+
+    pts2 <- t(cbind(mvmts[, 5:6]) %>% apply(., 2, as.numeric))
+    dimnames(pts2) <- list(NULL, c("x","y"))
+    pts2.sf <- pts2 %>%
+      as.data.frame() %>%
+#      rename(x = V1, y = V2) %>%
+      st_as_sf(coords = c("x", "y"), crs = 4326)
+  }
+
   xr <- c(min(position$longitude, na.rm = TRUE) - 1,
           max(position$longitude, na.rm = TRUE) + 1)
   yr <- c(min(position$latitude, na.rm = TRUE) - 1,
@@ -57,12 +80,12 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
   
   dist <- matrix(ncol = 1, nrow = nrow(pts1_o))
   dist_mvmts <- matrix(ncol = 1, nrow = nrow(mvmts))
-  
+
   for (u in 1:nrow(dist_mvmts)) {
     pts <- rbind(pts1[u, ], pts2[u, ])
     pts_o <- pts
     pts.sf <- rbind(pts1.sf[u,], pts2.sf[u,])
-    
+
     ##### If detection lat/long = subsequent detection lat/long then dist = 0 km
     if (sum(pts1[u,] == pts2[u,]) == 2) {
       dist_mvmts[u] <- 0
@@ -98,26 +121,28 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
           dist_sub <-
             which.min(geodist(
               Aust_sub[, 1:2],
-              rep(pts[is.na(ext.pts) , 1:2], nrow(Aust_sub)),
+              matrix(rep(pts[is.na(ext.pts) , 1:2], nrow(Aust_sub)), 
+                     nrow(Aust_sub), 2, byrow=TRUE, dimnames = list(NULL, c("lon","lat"))),
               paired = TRUE,
               measure = "geodesic",
               quiet = TRUE
             )) / 1000
           ## Find closest point on coast for river system
-          pts[is.na(ext.pts), ] <- Aust_sub[dist_sub, ]
+          pts[is.na(ext.pts), ] <- Aust_sub[dist_sub, 1:2]
         }
         if (sum(is.na(ext.pts)) > 1) {
           for (k in 1:2) {
             dist_sub <-
               which.min(geodist(
                 Aust_sub[, 1:2],
-                rep(pts[k, 1:2], nrow(Aust_sub)),
+                matrix(rep(pts[k, 1:2], nrow(Aust_sub)), 
+                       nrow(Aust_sub), 2, byrow=TRUE, dimnames = list(NULL, c("lon","lat"))),
                 paired = TRUE,
                 measure = "geodesic",
                 quiet = TRUE
               )) / 1000
             ## Find closest point on coast for river system
-            pts[k, ] <- Aust_sub[dist_sub, ]
+            pts[k, ] <- Aust_sub[dist_sub, 1:2]
           }
         }
       } else {
@@ -127,13 +152,14 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
             dist_sub <-
               which.min(geodist(
                 Aust_sub[, 1:2],
-                rep(pts[is.na(ext.pts), 1:2], nrow(Aust_sub)),
+                matrix(rep(pts[is.na(ext.pts), 1:2], nrow(Aust_sub)), 
+                       nrow(Aust_sub), 2, byrow=TRUE, dimnames = list(NULL, c("lon","lat"))),
                 paired = TRUE,
                 measure = "geodesic",
                 quiet = TRUE
               )) / 1000
             ## Find closest point on coast for river system
-            pts[is.na(ext.pts), ] <- Aust_sub[dist_sub, ]
+            pts[is.na(ext.pts), ] <- Aust_sub[dist_sub, 1:2]
           }
           if (sum(is.na(ext.pts)) > 1) {
             for (k in 1:2) {
@@ -141,14 +167,15 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
                 which.min(
                   geodist(
                     Aust_sub[, 1:2],
-                    rep(pts[k, 1:2], nrow(Aust_sub)),
+                    matrix(rep(pts[k, 1:2], nrow(Aust_sub)), 
+                           nrow(Aust_sub), 2, byrow=TRUE, dimnames = list(NULL, c("lon","lat"))),
                     paired = TRUE,
                     measure = "geodesic",
                     quiet = TRUE
                   )
                 ) / 1000
               ## Find closest point on coast for river system
-              pts[k, ] <- Aust_sub[dist_sub, ]
+              pts[k, ] <- Aust_sub[dist_sub, 1:2]
               
             }
           }

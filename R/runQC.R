@@ -90,7 +90,7 @@
 ##' @importFrom stringr str_split
 ##' @importFrom readr read_csv cols col_character col_double col_integer col_datetime
 ##' @importFrom lubridate ymd_hms dmy_hm
-##' @importFrom dplyr '%>%' rename mutate nest_by bind_rows
+##' @importFrom dplyr %>% rename mutate nest_by bind_rows
 ##' @importFrom parallel detectCores
 ##' @importFrom future plan
 ##' @importFrom furrr future_map furrr_options
@@ -120,7 +120,8 @@ runQC <- function(x,
 
   ## check if n_cores <= detectCores else return warning
   if(.ncores > detectCores())
-    warning("process to be run across more cores than available, this may not be efficient")
+    warning("process to be run across more cores than available, this may not be efficient",
+            call. = FALSE, immediate. = TRUE)
   
   ## create logfile object to record QC warnings
   ## write logfile to working directory
