@@ -5,7 +5,8 @@
 #install.packages('sp')
 #install.packages('raster')
 #install.packages('stars')
-devtools::install_github('ocean-tracking-network/remora@roxygen_fixes', force=TRUE)
+devtools::install_github('ocean-tracking-network/remora@R_cleanup', force=TRUE)
+devtools::install_github('ocean-tracking-network/surimi', force=TRUE)
 
 library(readr)
 library(terra)
@@ -19,6 +20,7 @@ library(utils)
 library(geosphere)
 library(rangeBuilder)
 library(remora)
+library(surimi)
 
 setwd('/Users/bruce/Work/remora')
 
@@ -58,13 +60,25 @@ otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detecti
 otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detections/cobcrp_matched_detections_2015/cobcrp_matched_detections_2015.csv")
 otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detections/cobcrp_matched_detections_2017/cobcrp_matched_detections_2017.csv")
 otn_files <- list(det = "testDataOTN/cobia/cobia_subset_export.csv")
-
 otn_files <- list(det = "testDataOTN/cobia/cobia_subset_export_TT1299_withBogus.csv")
 
+otn_files <- list(det = "/Users/bruce/Downloads/fsugg_matched_detections_2020/fsugg_matched_detections_2020.csv")
+
+otn_files <- list(det = "/Users/bruce/Downloads/fsugg_matched_detections_2017/fsugg_matched_detections_2017.csv")
+
+
+#UGAACI 2017 DATA
+otn_files <- list(det = "/Users/bruce/Downloads/ugaaci_matched_detections_2017/ugaaci_matched_detections_2017.csv")
+
 #Use this code with the appropriate files to generate a usable polygon for the species range.
-cobia <- read_csv("testDataOTN/cobia/r_canadum_OBIS.csv")
-cobia2 <- cobia %>% filter(is.na(flags))
-sps1Poly <- getDynamicAlphaHull(cobia2, fraction = 0.70, buff = 1000, partCount = 20, coordHeaders = c("decimalLongitude", "decimalLatitude"), clipToCoast = "aquatic")
+grouper <- read_csv("/Users/bruce/Downloads/7cbe0bd8-0e19-4bcd-9f1f-f594637f0f38/Occurrence.csv", na = c("", "NA", "{}"))
+grouperPoly <- createPolygon("/Users/bruce/Downloads/7cbe0bd8-0e19-4bcd-9f1f-f594637f0f38/Occurrence.csv", coordHeaders = c("decimallongitude", "decimallatitude"))
+#grouper2 <- grouper %>% filter(is.na(flags))
+#sps1Poly <- getDynamicAlphaHull(grouper, fraction = 0.70, buff = 1000, partCount = 20, coordHeaders = c("decimallongitude", "decimallatitude"), clipToCoast = "aquatic")
+
+sturgeon <- read_csv("/Users/bruce/Downloads/4865ec7b-50ec-4f0a-a3dd-58806e19be6e 2/Occurrence.csv", na = c("", "NA", "{}"))
+sturgeonPoly <- createPolygon("/Users/bruce/Downloads/4865ec7b-50ec-4f0a-a3dd-58806e19be6e/Occurrence.csv")
+
 
 #The QC functions rely on having shapefiles for distributions and study areas to calculate distances. 
 #We've got to get a shapefile for the Blue Shark test data, one is included here for sharks but for alternative data you will need your own appropriate one.
@@ -85,7 +99,7 @@ sps1Poly <- getDynamicAlphaHull(cobia2, fraction = 0.70, buff = 1000, partCount 
 #We also need a raster for the ocean. We'll load this from a mid-resolution tif file, for testing purposes. 
 world_raster <- raster::raster("./testDataOTN/NE2_50M_SR.tif")
 #And crop it based on our cropped blue shark extent. 
-world_raster_sub <- raster::crop(world_raster, sf::as_Spatial(shapefile_crop))
+world_raster_sub <- raster::crop(world_raster, sf::as_Spatial(grouperPoly))
 ## set values to either 1 (ocean) or NA (land)
 world_raster_sub[world_raster_sub < 251] <- NA
 world_raster_sub[world_raster_sub == 251] <- 1
@@ -94,12 +108,12 @@ world_raster_sub[world_raster_sub == 251] <- 1
 #At this time, however, the plotting function requires Release Location to run properly. You can run these tests if you want, but in an OTN data format
 #they will not be counted towards final QC aggregation. 
 tests_vector <-  c("FDA_QC",
-                   #"Velocity_QC",
-                   #"Distance_QC",
-                   #"DetectionDistribution_QC",
+                   "Velocity_QC",
+                   "Distance_QC",
+                   "DetectionDistribution_QC",
                    "DistanceRelease_QC",
                    "ReleaseDate_QC",
-                   #"ReleaseLocation_QC",
+                   "ReleaseLocation_QC",
                    "Detection_QC")
 
 #In a perfect world, when you run this code, you will get output with QC attached. 
@@ -118,9 +132,11 @@ shapefile_crop <- sf::st_crop(sps1Poly[[1]],  xmin=minLon, ymin=minLat, xmax=max
 otn_test_tag_qc <- runQC(otn_files, 
                          data_format = "otn", 
                          tests_vector = tests_vector, 
-                         #shapefile = sps1Poly[[1]], 
+                         shapefile = sturgeon_poly_weird, 
                          col_spec = NULL, 
                          fda_type = "pincock", 
+                         rollup = TRUE,
+                         world_raster = world_raster,
                          .parallel = FALSE, .progress = TRUE)
 
 plotQC(otn_test_tag_qc, path = "cobiaOutput", species_range=sps1Poly[[1]])

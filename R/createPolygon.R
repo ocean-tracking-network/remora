@@ -23,16 +23,21 @@
 
 #Function made by Bruce Delo but the underlying code was developed by Jessica Castellanos (UGuelph). Many of the comments are hers too.
 
-createPolygon <- function(occurrenceFile, 
+createPolygon <- function(occurrences, 
                           fraction = 0.70, 
                           buffer = 1000, 
-                          partCount = 20,  
+                          partsCount = 20,  
                           coordHeaders = c("decimallongitude", "decimallatitude"), 
                           clipToCoast = "aquatic",
                           returnWhole = FALSE) {
   
-  #Read in the occurrence CSV. 
-  occurrence <- read_csv(occurrenceFile)
+  if(typeof(occurrences) == "character") {
+    #Read in the occurrence CSV. 
+    occurrence <- read_csv(occurrences)
+  }
+  else {
+    occurrence <- occurrences
+  }
   
   #Using the R package rangeBuilder to generate an alpha hull polygon which defines a concave hull or boundary around a set of points in two or three dimensions. 
   #The alpha hull polygon is a generalization of the convex hull, allowing for the creation of concave regions. 
@@ -51,7 +56,7 @@ createPolygon <- function(occurrenceFile,
   polygon <- getDynamicAlphaHull(occurrence, 
                                  fraction = fraction, 
                                  buff = buffer, 
-                                 partCount = partCount, 
+                                 partCount = partsCount, 
                                  coordHeaders = coordHeaders, 
                                  clipToCoast = clipToCoast)
   
