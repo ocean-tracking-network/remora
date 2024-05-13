@@ -28,8 +28,7 @@ createPolygon <- function(occurrences,
                           buffer = 1000, 
                           partsCount = 20,  
                           coordHeaders = c("decimallongitude", "decimallatitude"), 
-                          clipToCoast = "aquatic",
-                          returnWhole = FALSE) {
+                          clipToCoast = "aquatic") {
   
   if(typeof(occurrences) == "character") {
     #Read in the occurrence CSV. 
@@ -57,7 +56,7 @@ createPolygon <- function(occurrences,
   #EDIT: I found a different package, marineBackground, that wraps the getDynamicAlphaHull function with a bunch of extra greeblies specifically for converting occurrence data into
   #shapefiles for oceangoing species. Subbed that in here, but most of the parameters are the same. ClipToOcean is added by marineBackground and will automatically drop any chunks of the
   #polygon that don't contain actual occurrences and are just generated as artefacts of the hull-making process.
-  polygon <- voluModel::marineBackground(occurrence, 
+  occurrenceVector <- voluModel::marineBackground(occurrence, 
                                   fraction = fraction, 
                                   buff = buffer, 
                                   partCount = partsCount, 
@@ -65,12 +64,9 @@ createPolygon <- function(occurrences,
                                   clipToCoast = clipToCoast,
                                   clipToOcean = TRUE)
   
-  if(returnWhole == TRUE) {
-    return(polygon)
-  }
-  else{
-    return(polygon[[1]])
-  }
+  polygon <- st_as_sf(occurrenceVector)
+  
+  return(polygon)
 }
 
 
