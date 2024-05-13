@@ -53,12 +53,17 @@ createPolygon <- function(occurrences,
   #buff: buffering distance in meters - 1000. This should be adjusted considering OBIS buffering
   #partCount: the maximum number of disjunct polygons that are allowed. I set this to a high number to allow for global distribution and multiple polygons.
   #clipToCoast: Either "no" (no clipping), "terrestrial" (only terrestrial part of the range is kept) or "aquatic" (only non-terrestrial part is clipped).
-  polygon <- getDynamicAlphaHull(occurrence, 
-                                 fraction = fraction, 
-                                 buff = buffer, 
-                                 partCount = partsCount, 
-                                 coordHeaders = coordHeaders, 
-                                 clipToCoast = clipToCoast)
+  
+  #EDIT: I found a different package, marineBackground, that wraps the getDynamicAlphaHull function with a bunch of extra greeblies specifically for converting occurrence data into
+  #shapefiles for oceangoing species. Subbed that in here, but most of the parameters are the same. ClipToOcean is added by marineBackground and will automatically drop any chunks of the
+  #polygon that don't contain actual occurrences and are just generated as artefacts of the hull-making process.
+  polygon <- voluModel::marineBackground(occurrence, 
+                                  fraction = fraction, 
+                                  buff = buffer, 
+                                  partCount = partsCount, 
+                                  coordHeaders = coordHeaders, 
+                                  clipToCoast = clipToCoast,
+                                  clipToOcean = TRUE)
   
   if(returnWhole == TRUE) {
     return(polygon)
