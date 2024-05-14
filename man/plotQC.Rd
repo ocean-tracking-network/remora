@@ -4,7 +4,7 @@
 \alias{plotQC}
 \title{produce interactive leaflet maps showing the occurrence of QC'd detections per species}
 \usage{
-plotQC(x, path = NULL, pal = "PuOr", revpal = TRUE)
+plotQC(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp = NULL)
 }
 \arguments{
 \item{x}{a remora output object with \code{class(remora_QC)}.}
