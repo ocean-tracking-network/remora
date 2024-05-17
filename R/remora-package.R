@@ -19,7 +19,7 @@ NULL
 ##' @keywords remora
 ##' @importFrom utils data flush.console globalVariables
 ##' @importFrom stats approx median time
-NULL
+"_PACKAGE"
 
 ##' @name TownsvilleReefQC
 ##' @docType data

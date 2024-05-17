@@ -7,6 +7,8 @@
 \title{remora: Rapid Extraction of Marine Observations for Roving Animals}
 \description{
 R Package to access, quality-control, animal acoustic tracking data and integrate with environmental data.
+
+R Package to access, quality-control, animal acoustic tracking data and integrate with environmental data.
 }
 \references{
 Hoenner, X et al. (2018) Australia’s continental-scale acoustic
