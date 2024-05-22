@@ -35,7 +35,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                data_format = "imos",
                shapefile = NULL,
                fda_type = "time-diff",
-               dist_threshold = 500) {
+               dist_threshold = 500,
+               world_raster = NULL) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
   temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
@@ -207,37 +208,36 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	                               tr = tr)
   	               },
   	               otn = {
-  	                 if (!is.null(shp_b)) {
-  	                   dist <- NULL
-  	                   #shortest_dist2(position,
-  	                                 #x$installation_name,
-  	                                 #rast = world_raster_sub,
-  	                                 #tr = tr)
-  	                 }
+  	                   shortest_dist2(position,
+  	                                 x$installation_name,
+  	                                 rast = world_raster,
+  	                                 tr = tr)
   	               })
-  	#message("shortest dist calculated")
+  	message("shortest dist calculated")
   }
   
   ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
   ##  coordinates to SpatialPoints to test subsequently whether or not detections 
   ##  are in distribution range
-  if (!is.null(shp_b)) {
-    ll <- unique(data.frame(x$longitude, x$latitude)) %>%
-      st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
-
-    # coordinates(ll) <- ~ x.longitude + x.latitude
-    # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
-
-    if (!is.na(x$transmitter_deployment_longitude[1])) {
-      ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
-                         lat = x$transmitter_deployment_latitude[1]) %>%
-        st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
-      
-      # coordinates(ll_r) <-
-      #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
-      # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
-    }
-  }
+  
+  ##Commenting out since we're doing this above. Testing to see if I'm accidentally superseding myself., 
+  # if (!is.null(shp_b)) {
+  #   ll <- unique(data.frame(x$longitude, x$latitude)) %>%
+  #     st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
+  # 
+  #   # coordinates(ll) <- ~ x.longitude + x.latitude
+  #   # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
+  # 
+  #   if (!is.na(x$transmitter_deployment_longitude[1])) {
+  #     ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
+  #                        lat = x$transmitter_deployment_latitude[1]) %>%
+  #       st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
+  #     
+  #     # coordinates(ll_r) <-
+  #     #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
+  #     # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
+  #   }
+  # }
     if("Velocity_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
       write(paste0(x$filename[1],
                    ":  ", " Running velocity check"),
@@ -288,8 +288,9 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release location check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r)
+      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format)
     }
+		
 		## it might be better to keep all tests in temporal_outcome & just ensure
 		##  tests that are turned off return NA values, that way output QC object always
 		##  has same dims - otherwise this will cause IMOS AODN incoming server checks to

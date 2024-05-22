@@ -54,7 +54,9 @@ qc_detection_qc <- function(qc_result, data_format = "imos") {
                    ))
     
     ones <- rowSums(qc_result[, idx] == 1)
-    total_tests <- ncol(qc_result)
+    total_tests <- length(idx)
+    message("Number of tests")
+    message(total_tests)
     
     #Set everything to be 1 and then reassign as below. 
     qc_result[,"Detection_QC"] <- 1
