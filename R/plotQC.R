@@ -36,18 +36,27 @@
 ##'
 ##' @export
 
-plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp = NULL) {
+plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp = NULL, data_format = 'imos') {
 
   if(!inherits(x, "remora_QC")) 
     stop("\033[31;1mx must be a nested tibble with class `remora_QC`\033[0m")
   
   QCdata <- bind_rows(x$QC)
 
-  species <- QCdata %>% select(CAAB_species_id, 
-                               species_scientific_name, 
-                               species_common_name) %>%
-    distinct(.keep_all = TRUE)
-	
+  if(data_format == 'imos') {
+    species <- QCdata %>% select(CAAB_species_id, 
+                                 species_scientific_name, 
+                                 species_common_name) %>%
+      distinct(.keep_all = TRUE)
+  }
+  else if(data_format == 'otn') {
+    species <- QCdata %>% select(WORMS_species_aphia_id, 
+                                 species_scientific_name, 
+                                 species_common_name) %>%
+      distinct(.keep_all = TRUE)
+  }
+	View(species)
+  
 	for (i in 1:nrow(species)){
 	  if(!is.null(distribution_shp)) {
 	    expert_shp <- distribution_shp
@@ -72,7 +81,15 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 	    }
 	  }
 		
-		data <- subset(QCdata, CAAB_species_id == species$CAAB_species_id[i])
+	  if(data_format == "imos") {
+		  data <- subset(QCdata, CAAB_species_id == species$CAAB_species_id[i])
+	  }
+	  else if (data_format == "otn") {
+	    data <- subset(QCdata, WORMS_species_aphia_id == species$WORMS_species_aphia_id[i])
+	  }
+		
+	  View(data)
+	  
 		releases <- with(data, unique(data.frame(transmitter_id, 
 		                                         tag_id,
 		                                         transmitter_deployment_id,
@@ -90,7 +107,7 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 		                 'receiver_deployment_longitude',
 		                 'receiver_deployment_latitude',
 		                 'Detection_QC')]
-	 
+		 
 		nT <- data %>% group_by(station_name, 
 		                         installation_name, 
 		                         receiver_deployment_longitude, 

@@ -114,6 +114,7 @@ runQC <- function(x,
                   fda_type = "time_diff", #Added by Bruce Delo for pass-through to QC, then to false detections. Lets user decide whether to use remora's time diff method or pincock method.
                   rollup = FALSE, #Added by Bruce Delo, invokes Surimi's rollup function to return QC columns attached to detection extract.
                   distance_threshold = 500, ##Added by Bruce Delo, passes a distance threshold through to QC for use in the 'distance from release' test
+                  world_raster = NULL, #Added by Bruce Delo, pass-through to QC for use as something other than Australia's raster for shortest-distance calculation.
                    .parallel = FALSE,
                    .ncores = detectCores() - 2,
                    .progress = TRUE) {
@@ -187,7 +188,8 @@ runQC <- function(x,
                data_format = "otn",
                shapefile = shapefile,
                fda_type = fda_type,
-               dist_threshold = distance_threshold), 
+               dist_threshold = distance_threshold,
+               world_raster = world_raster), 
             silent = FALSE)
         
       } else if (data_format == "imos") {
