@@ -4,9 +4,11 @@
 \name{remora-package}
 \alias{remora-package}
 \alias{remora}
-\title{\pkg{remora}}
+\title{remora: Rapid Extraction of Marine Observations for Roving Animals}
 \description{
-Rapid Extraction of Marine Observations for Roving Animals
+R Package to access, quality-control, animal acoustic tracking data and integrate with environmental data.
+
+R Package to access, quality-control, animal acoustic tracking data and integrate with environmental data.
 }
 \references{
 Hoenner, X et al. (2018) Australia’s continental-scale acoustic
@@ -14,9 +16,39 @@ tracking database and its automated quality control process. Scientific Data
 5, 170206. https://doi.org/10.1038/sdata.2017.206
 }
 \seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/IMOS-AnimalTracking/remora/}
+  \item \url{https://imos-animaltracking.github.io/remora}
+  \item Report bugs at \url{https://github.com/IMOS-AnimalTracking/remora/issues}
+}
+
+
 runQC extractEnv extractMoor shinyReport
 }
 \author{
+\strong{Maintainer}: Ian Jonsen \email{ian.jonsen@mq.edu.au} (\href{https://orcid.org/0000-0001-5423-6076}{ORCID}) [contributor]
+
+Authors:
+\itemize{
+  \item Fabrice Jaine \email{fabrice.jaine@sims.org.au} (\href{https://orcid.org/0000-0002-9304-5034}{ORCID}) [contributor]
+  \item Vinay Udyawer \email{v.udyawer@aims.gov.au} (\href{https://orcid.org/0000-0001-5812-0740}{ORCID}) [contributor]
+  \item Ross Dwyer \email{rdwyer2@usc.edu.au} (\href{https://orcid.org/0000-0003-1136-5489}{ORCID}) [contributor]
+  \item Kylie Scales \email{kscales@usc.edu.au} (\href{https://orcid.org/0000-0003-0843-0956}{ORCID}) [contributor]
+  \item Francisca Maron \email{francisca.maron@sims.org.au} (\href{https://orcid.org/0000-0001-7633-7003}{ORCID}) [contributor]
+  \item Xavier Hoenner \email{Xavier.Hoenner@csiro.au} (\href{https://orcid.org/0000-0001-5811-1166}{ORCID}) [contributor]
+  \item Charlie Huveneers \email{charlie.huveneers@flinders.edu.au} (\href{https://orcid.org/0000-0001-8937-1358}{ORCID}) [contributor]
+  \item Yuri Niella \email{yuri.niella@mq.edu.au} (\href{https://orcid.org/0000-0003-1878-6091}{ORCID}) [contributor]
+}
+
+Other contributors:
+\itemize{
+  \item Bruce Delo \email{br772481@dal.ca} [contributor]
+  \item Jon Pye \email{jon.pye@gmail.com} [contributor]
+}
+
+
 Ross Dwyer, Xavier Hoenner, Charlie Huveneers, Fabrice Jaine, Ian Jonsen, Francisca Maron, Kylie Scales, Vinay Udyawer
 }
+\keyword{internal}
 \keyword{remora}

@@ -5,13 +5,12 @@
 \title{Create Polygon}
 \usage{
 createPolygon(
-  occurrenceFile,
+  occurrences,
   fraction = 0.7,
   buffer = 1000,
-  partCount = 20,
+  partsCount = 20,
   coordHeaders = c("decimallongitude", "decimallatitude"),
-  clipToCoast = "aquatic",
-  returnWhole = FALSE
+  clipToCoast = "aquatic"
 )
 }
 \arguments{
@@ -19,15 +18,15 @@ createPolygon(
 
 \item{buffer}{...}
 
-\item{partCount}{...}
-
 \item{coordHeaders}{...}
 
 \item{clipToCoast}{...}
 
-\item{returnWhole}{...}
-
 \item{occurenceFile}{...}
+
+\item{partCount}{...}
+
+\item{returnWhole}{...}
 }
 \value{
 retruns a polygon data frame

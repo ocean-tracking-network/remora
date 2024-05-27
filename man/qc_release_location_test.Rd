@@ -10,6 +10,7 @@ qc_release_location_test(
   species_range,
   distances,
   latlons,
+  data_format,
   distance_threshold = 500
 )
 }

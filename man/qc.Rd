@@ -13,7 +13,8 @@ qc(
   data_format = "imos",
   shapefile = NULL,
   fda_type = "time-diff",
-  dist_threshold = 500
+  dist_threshold = 500,
+  world_raster = NULL
 )
 }
 \arguments{

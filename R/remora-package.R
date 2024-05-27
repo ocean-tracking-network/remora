@@ -1,10 +1,14 @@
-##' \pkg{remora}
-##'
+#' @keywords internal
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
+NULL
+
 ##' Rapid Extraction of Marine Observations for Roving Animals
 ##'
 ##' @name remora-package
 ##' @aliases remora remora-package
-##' @docType package
 ##' @author Ross Dwyer, Xavier Hoenner, Charlie Huveneers, Fabrice Jaine, Ian Jonsen, Francisca Maron, Kylie Scales, Vinay Udyawer
 ##'
 ##' @seealso runQC extractEnv extractMoor shinyReport
@@ -15,7 +19,7 @@
 ##' @keywords remora
 ##' @importFrom utils data flush.console globalVariables
 ##' @importFrom stats approx median time
-NULL
+"_PACKAGE"
 
 ##' @name TownsvilleReefQC
 ##' @docType data

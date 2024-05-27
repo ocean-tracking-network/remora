@@ -23,16 +23,20 @@
 
 #Function made by Bruce Delo but the underlying code was developed by Jessica Castellanos (UGuelph). Many of the comments are hers too.
 
-createPolygon <- function(occurrenceFile, 
+createPolygon <- function(occurrences, 
                           fraction = 0.70, 
                           buffer = 1000, 
-                          partCount = 20,  
+                          partsCount = 20,  
                           coordHeaders = c("decimallongitude", "decimallatitude"), 
-                          clipToCoast = "aquatic",
-                          returnWhole = FALSE) {
+                          clipToCoast = "aquatic") {
   
-  #Read in the occurrence CSV. 
-  occurrence <- read_csv(occurrenceFile)
+  if(typeof(occurrences) == "character") {
+    #Read in the occurrence CSV. 
+    occurrence <- read_csv(occurrences)
+  }
+  else {
+    occurrence <- occurrences
+  }
   
   #Using the R package rangeBuilder to generate an alpha hull polygon which defines a concave hull or boundary around a set of points in two or three dimensions. 
   #The alpha hull polygon is a generalization of the convex hull, allowing for the creation of concave regions. 
@@ -48,19 +52,21 @@ createPolygon <- function(occurrenceFile,
   #buff: buffering distance in meters - 1000. This should be adjusted considering OBIS buffering
   #partCount: the maximum number of disjunct polygons that are allowed. I set this to a high number to allow for global distribution and multiple polygons.
   #clipToCoast: Either "no" (no clipping), "terrestrial" (only terrestrial part of the range is kept) or "aquatic" (only non-terrestrial part is clipped).
-  polygon <- getDynamicAlphaHull(occurrence, 
-                                 fraction = fraction, 
-                                 buff = buffer, 
-                                 partCount = partCount, 
-                                 coordHeaders = coordHeaders, 
-                                 clipToCoast = clipToCoast)
   
-  if(returnWhole == TRUE) {
-    return(polygon)
-  }
-  else{
-    return(polygon[[1]])
-  }
+  #EDIT: I found a different package, marineBackground, that wraps the getDynamicAlphaHull function with a bunch of extra greeblies specifically for converting occurrence data into
+  #shapefiles for oceangoing species. Subbed that in here, but most of the parameters are the same. ClipToOcean is added by marineBackground and will automatically drop any chunks of the
+  #polygon that don't contain actual occurrences and are just generated as artefacts of the hull-making process.
+  occurrenceVector <- voluModel::marineBackground(occurrence, 
+                                  fraction = fraction, 
+                                  buff = buffer, 
+                                  partCount = partsCount, 
+                                  coordHeaders = coordHeaders, 
+                                  clipToCoast = clipToCoast,
+                                  clipToOcean = TRUE)
+  
+  polygon <- st_as_sf(occurrenceVector)
+  
+  return(polygon)
 }
 
 
