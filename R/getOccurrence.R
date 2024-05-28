@@ -22,7 +22,7 @@ getOccurrence <- function(sciName) {
   #It's hitting an API and getting JSON back, don't overthink it.
   response <- request(base_url = 'https://api.gbif.org/v1/species') %>% 
     req_url_query(`datasetKey` = '2d59e5db-57ad-41ff-97d6-11f5fb264527', 
-                  `sourceId` = 'urn:lsid:marinespecies.org:taxname:159222') %>% 
+                  `sourceId` = paste0('urn:lsid:marinespecies.org:taxname:', aphiaID)) %>% 
     req_perform() %>%
     resp_body_json()
   
@@ -37,17 +37,17 @@ getOccurrence <- function(sciName) {
   
   # Select only the columns we need...
   obis_select <- obis_results %>% 
-    select(occurrenceID, 
+    dplyr::select(occurrenceID, 
            decimalLatitude, 
            decimalLongitude) %>% 
-    mutate(Source = 'OBIS')
+    dplyr::mutate(Source = 'OBIS')
   
   #From both dataframes
   gbif_select <- gbif_results %>% 
-    select(occurrenceID, 
+    dplyr::select(occurrenceID, 
            decimalLatitude, 
            decimalLongitude) %>% 
-    mutate(Source = 'GBIF')
+    dplyr::mutate(Source = 'GBIF')
   
   # Join Data from GBIF and OBIS
   data_joined <- rbind(obis_select,
