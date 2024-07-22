@@ -88,3 +88,24 @@ otn_test_tag_qc <- runQC(otn_files_fsugg,
                          .parallel = FALSE, .progress = TRUE)
 
 plotQC(otn_test_tag_qc, distribution_shp = grouperPolygon, data_format = "otn")
+
+otn_files_striper <- list(det = "/Users/bruce/Downloads/paxsb08_matched_detections_2007/paxsb08_matched_detections_2007.csv")
+
+scientific_name <- "Morone saxatilis"
+
+striperOccurrence <- getOccurrence(scientific_name)
+
+striperPolygon <- createPolygon(striperOccurrence, fraction=1, partsCount = 1, buff=10000, clipToCoast = "aquatic")
+plot(striperPolygon)
+
+otn_test_tag_qc <- runQC(otn_files_striper, 
+                         data_format = "otn", 
+                         tests_vector = tests_vector, 
+                         shapefile = striperPolygon, 
+                         col_spec = NULL, 
+                         fda_type = "pincock", 
+                         rollup = TRUE,
+                         world_raster = world_raster,
+                         .parallel = FALSE, .progress = TRUE)
+
+plotQC(otn_test_tag_qc, distribution_shp = striperPolygon, data_format = "otn")
