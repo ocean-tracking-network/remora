@@ -8,8 +8,10 @@
 ##'
 ##' @return Returns a csv representing occurrence data for the fish in question. 
 ##'
-##' @import httr2 resp_body_json
-##' @import worrms wm_name2id
+##' @importFrom httr2 resp_body_json
+##' @importFrom worrms wm_name2id
+##' @importFrom robis occurrence
+##' @importFrom rgbif occ_data
 ##' @export
 
 getOccurrence <- function(sciName) {
