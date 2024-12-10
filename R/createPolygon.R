@@ -66,7 +66,11 @@ createPolygon <- function(occurrences,
   
   polygon <- st_as_sf(occurrenceVector)
   
-  return(polygon)
+  #I'm returning both here because a recent update to the glatos package made it so that we can't pass the multipolygon to make_transition (the function we had been using, make_transition2,
+  #got deprecated). Parts of the code may still rely on the multipolygon, which is why I'm returning it here, but adding the occurrenceVector gives us latitude to transform it into other
+  #spatial objects if more functions like make_transition need something other than spatVectors and multipolygons. Depending on how the rest of the code shakes out I may make this a toggle
+  #that you can control with an argument to return one, the other, or both. 
+  return(occurrenceVector, polygon)
 }
 
 
