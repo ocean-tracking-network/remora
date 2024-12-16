@@ -10,7 +10,7 @@
 ##' 
 ##' @importFrom sf st_crop st_bbox
 ##' @importFrom raster raster crop
-##' @importFrom glatos make_transition2
+##' @importFrom glatos make_transition
 ##' 
 ##' @keywords internal
 
@@ -37,7 +37,7 @@ get_qc_shapes <- function(detection_extract,
   }
 
   #Generate a transition layer
-  transition_layer <- make_transition2(shapefile_crop)
+  transition_layer <- make_transition(st_as_sf(shapefile_crop))
   
   #Crop the world raster
   if(file.exists(worldimage)) {
