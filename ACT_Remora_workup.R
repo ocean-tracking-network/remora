@@ -9,14 +9,17 @@ library(sf)
 library(sp)
 library(raster)
 library(stars)
-library(glatos)
 library(utils)
 library(geosphere)
 library(rangeBuilder)
 library(surimi)
 
+remove.packages('glatos')
+devtools::install_github("ocean-tracking-network/glatos", force=TRUE)
+library(glatos)
 devtools::install_github("ocean-tracking-network/remora", force=TRUE)
 library(remora)
+library(glatos)
 
 #setwd('Work/remora')
 
@@ -44,7 +47,10 @@ sturgeonOccurrence <- getOccurrence(scientific_name)
 
 #Mostly work by Jessica Castellanos!
 #Takes just under 90 seconds to run.
-sturgeonPolygon <- createPolygon(sturgeonOccurrence, fraction=1, partsCount=1, buff=100000, clipToCoast = "aquatic")
+sturgeonList <- createPolygon(sturgeonOccurrence, fraction=1, partsCount=1, buff=100000, clipToCoast = "aquatic")
+
+sturgeonVector <- sturgeonList$vector
+sturgeonPolygon <- sturgeonList$polygon
 
 plot(sturgeonPolygon)
 
@@ -52,7 +58,7 @@ plot(sturgeonPolygon)
 otn_test_tag_qc <- runQC(otn_files_ugacci, 
                          data_format = "otn", 
                          tests_vector = tests_vector, 
-                         shapefile = sturgeonPolygon, 
+                         shapefile = st_as_sf(sturgeonPolygon), 
                          fda_type = "pincock", 
                          rollup = TRUE,
                          world_raster = world_raster,
