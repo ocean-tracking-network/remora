@@ -55,7 +55,7 @@ View(otn_mapped_test)
 
 #The above code isn't meant to be run on its own just yet, the ideal is that you can pass it to QC without having to manually map it. 
 #otn_files <- list(det = "/Users/bruce/Downloads/animal_extract_2013_2.csv") #Put your path to your files here
-#otn_files <- list(det = "testDataOTN/qc_princess.csv")
+otn_files <- list(det = "testDataOTN/qc_princess.csv")
 otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detections/cobcrp_matched_detections_2022/cobcrp_matched_detections_2022.csv")
 otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detections/cobcrp_matched_detections_2015/cobcrp_matched_detections_2015.csv")
 otn_files <- list(det = "/Users/bruce/Downloads/cobcrp-all-years-matched-detections/cobcrp_matched_detections_2017/cobcrp_matched_detections_2017.csv")
@@ -79,6 +79,7 @@ grouperPoly <- createPolygon("/Users/bruce/Downloads/7cbe0bd8-0e19-4bcd-9f1f-f59
 sturgeon <- read_csv("/Users/bruce/Downloads/4865ec7b-50ec-4f0a-a3dd-58806e19be6e 2/Occurrence.csv", na = c("", "NA", "{}"))
 sturgeonPoly <- createPolygon("/Users/bruce/Downloads/4865ec7b-50ec-4f0a-a3dd-58806e19be6e/Occurrence.csv")
 
+scientific
 
 #The QC functions rely on having shapefiles for distributions and study areas to calculate distances. 
 #We've got to get a shapefile for the Blue Shark test data, one is included here for sharks but for alternative data you will need your own appropriate one.

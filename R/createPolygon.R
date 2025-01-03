@@ -56,6 +56,8 @@ createPolygon <- function(occurrences,
   #EDIT: I found a different package, voluModel, that wraps the getDynamicAlphaHull function with a bunch of extra greeblies specifically for converting occurrence data into
   #shapefiles for oceangoing species. Subbed that in here, but most of the parameters are the same. ClipToOcean is added by marineBackground and will automatically drop any chunks of the
   #polygon that don't contain actual occurrences and are just generated as artefacts of the hull-making process.
+  message("About to run voluModel")
+  
   occurrenceVector <- voluModel::marineBackground(occurrence, 
                                   fraction = fraction, 
                                   buff = buffer, 
@@ -63,6 +65,9 @@ createPolygon <- function(occurrences,
                                   coordHeaders = coordHeaders, 
                                   clipToCoast = clipToCoast,
                                   clipToOcean = TRUE)
+  
+  message("got this far")
+  View(occurrenceVector)
   
   polygon <- st_as_sf(occurrenceVector)
   

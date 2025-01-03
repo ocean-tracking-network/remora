@@ -17,7 +17,8 @@ library(surimi)
 remove.packages('glatos')
 devtools::install_github("ocean-tracking-network/glatos", force=TRUE)
 library(glatos)
-devtools::install_github("ocean-tracking-network/remora", force=TRUE)
+remove.packages("remora")
+devtools::install_github("ocean-tracking-network/remora@notebook_updates", force=TRUE)
 library(remora)
 library(glatos)
 
@@ -58,7 +59,7 @@ plot(sturgeonPolygon)
 otn_test_tag_qc <- runQC(otn_files_ugacci, 
                          data_format = "otn", 
                          tests_vector = tests_vector, 
-                         shapefile = st_as_sf(sturgeonPolygon), 
+                         shapefile = sturgeonPolygon, 
                          fda_type = "pincock", 
                          rollup = TRUE,
                          world_raster = world_raster,

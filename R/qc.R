@@ -196,7 +196,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     ## BD: added a check to not run the OTN version of this if shp_b is null
   	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
   	if(data_format == "otn") {
-  	  resolution = scale_meters_to_degrees(1000,shp_b)
+  	  resolution = scale_meters_to_degrees(5000,shp_b)
   	  transition_layer <- make_transition(st_as_sf(shp_b), res = resolution)
   	  tr <- transition_layer$transition
   	  print("Made transition layer")
