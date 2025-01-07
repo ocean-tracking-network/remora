@@ -8,7 +8,6 @@
 ##' @param species_range the expert species distribution shapefile (if avaiable)
 ##' @param distances ...
 ##' @param latlons ...
-##' @param distance_threshold ...
 ##' 
 ##' @details ...
 ##' 
@@ -24,22 +23,26 @@ qc_release_location_test <-
            distances,
            latlons,
            data_format,
-           distance_threshold = 500) {
-    
+           ...) {
+
+    if(!exists(release_loc_threshold)) {
+      release_loc_threshold <- 500
+    }
+        
     message("Starting release location test.")
     ## Release location test
     if (!is.null(species_range)) {
       message("We have a shapefile")
       species_range_spatial <- sf::as_Spatial(species_range)
       qc_result[, "ReleaseLocation_QC"] <-
-        ifelse(distances[1] > distance_threshold &
+        ifelse(distances[1] > release_loc_threshold &
                  sum(is.na(
                    sp::over(latlons, species_range_spatial, returnList = TRUE)
                  )) > 0, 2, 1)
     } else {
       message("We have no shapefile.")
       qc_result[, "ReleaseLocation_QC"] <-
-        ifelse(distances[1] > distance_threshold, 2, 1)
+        ifelse(distances[1] > release_loc_threshold, 2, 1)
     }
     message("release location test done")
     return(qc_result)

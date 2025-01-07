@@ -18,7 +18,11 @@
 qc_false_detection_test <- function(data,
                                     qc_result,
                                     type = "time_diff",
-                                    pincock_threshold = 3600) {
+                                    ...) {
+  
+  if (!exists(pincock_threshold)) {
+    pincock_threshold <- 3600
+  }
   
   sta_rec <- unique(data$installation_name)
   sta_rec <- sta_rec[order(sta_rec)]

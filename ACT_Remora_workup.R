@@ -57,6 +57,10 @@ plot(sturgeonPolygon)
 #Parameters, which allows the user to pass parameters into the QC functions.
 velocity_threshold <- 10
 dist_threshold <- 1000
+release_dist_threshold <- 500
+pincock_threshold <- 3600
+release_loc_threshold <- 500
+transition_layer_res <- 5000
 
 #Takes about 5.5m to run.
 otn_test_tag_qc <- runQC(otn_files_ugacci, 
@@ -68,7 +72,11 @@ otn_test_tag_qc <- runQC(otn_files_ugacci,
                          world_raster = world_raster,
                          .parallel = FALSE, .progress = TRUE,
                          velocity_threshold,
-                         dist_threshold)
+                         dist_threshold,
+                         release_dist_threshold,
+                         pincock_threshold,
+                         release_loc_threshold,
+                         transition_layer_res)
 
 #Mostly work by Ian Jonsen!
 plotQC(otn_test_tag_qc, distribution_shp = sturgeonPolygon, data_format = "otn")

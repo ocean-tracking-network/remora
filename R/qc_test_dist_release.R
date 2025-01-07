@@ -17,7 +17,11 @@
 ##' 
 qc_test_dist_release <- function(data, 
                                  qc_results, 
-                                 distance_threshold = 500) {
+                                 ...) {
+  
+  if (!exists(release_dist_threshold)) {
+    release_dist_threshold <- 500
+  }
   
   if("transmitter_deployment_longitude" %in% colnames(data) &&
      "transmitter_deployment_latitude" %in% colnames(data)) {
@@ -26,7 +30,7 @@ qc_test_dist_release <- function(data,
                             data$transmitter_deployment_latitude[rep(1, nrow(data))]),
                       cbind(data$longitude, data$latitude)) / 1000 ## return in km
     message("distGeo done.")
-    qc_results[, "DistanceRelease_QC"] <- ifelse(dist_r > distance_threshold, 2, 1)
+    qc_results[, "DistanceRelease_QC"] <- ifelse(dist_r > release_dist_threshold, 2, 1)
   } else {
     message("No transmitter lat/long in dataframe, skipping distance-from-release check.")
   }
