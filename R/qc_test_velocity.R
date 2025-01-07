@@ -22,7 +22,7 @@ qc_test_velocity <- function(data,
                              dist, 
                              ...) {
   
-  if (!exists(velocity_threshold)) {
+  if (!exists("velocity_threshold")) {
     velocity_threshold <- 10
   }
   

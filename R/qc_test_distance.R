@@ -18,7 +18,7 @@ qc_test_distance <- function(data,
                              qc_results, 
                              dist, 
                              ...) {
-  if (!exists(dist_threshold)) {
+  if (!exists("dist_threshold")) {
     dist_threshold <- 1000
   }
   

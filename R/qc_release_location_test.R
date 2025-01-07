@@ -25,7 +25,7 @@ qc_release_location_test <-
            data_format,
            ...) {
 
-    if(!exists(release_loc_threshold)) {
+    if(!exists("release_loc_threshold")) {
       release_loc_threshold <- 500
     }
         

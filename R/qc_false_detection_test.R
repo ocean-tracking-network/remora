@@ -20,7 +20,7 @@ qc_false_detection_test <- function(data,
                                     type = "time_diff",
                                     ...) {
   
-  if (!exists(pincock_threshold)) {
+  if (!exists("pincock_threshold")) {
     pincock_threshold <- 3600
   }
   

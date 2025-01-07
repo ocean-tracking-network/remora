@@ -19,7 +19,7 @@ qc_test_dist_release <- function(data,
                                  qc_results, 
                                  ...) {
   
-  if (!exists(release_dist_threshold)) {
+  if (!exists("release_dist_threshold")) {
     release_dist_threshold <- 500
   }
   
