@@ -20,7 +20,11 @@
 qc_test_velocity <- function(data, 
                              qc_results, 
                              dist, 
-                             velocity_threshold = 10) {
+                             ...) {
+  
+  if (!exists(velocity_threshold)) {
+    velocity_threshold <- 10
+  }
   
   if (length(dist) == 1) {
       timediff <- as.numeric(

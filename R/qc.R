@@ -36,7 +36,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                shapefile = NULL,
                fda_type = "time-diff",
                dist_threshold = 500,
-               world_raster = NULL) {
+               world_raster = NULL,
+               ...) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
   temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
@@ -244,7 +245,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running velocity check"),
             file = logfile,
             append = TRUE)
-    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist)
+    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist, ...)
     }
   
     if("Distance_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {

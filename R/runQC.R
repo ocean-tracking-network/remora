@@ -117,7 +117,8 @@ runQC <- function(x,
                   world_raster = NULL, #Added by Bruce Delo, pass-through to QC for use as something other than Australia's raster for shortest-distance calculation.
                    .parallel = FALSE,
                    .ncores = detectCores() - 2,
-                   .progress = TRUE) {
+                   .progress = TRUE,
+                  ...) {
 
   ## check if n_cores <= detectCores else return warning
   if(.ncores > detectCores())
@@ -185,6 +186,7 @@ runQC <- function(x,
                Lcheck = FALSE,
                logfile,
                tests_vector,
+               params_vector,
                data_format = "otn",
                shapefile = shapefile,
                fda_type = fda_type,
