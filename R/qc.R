@@ -253,7 +253,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance check"),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist)
+      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist, ...)
     }
 
 		message("Dist/velocity tests done.")
@@ -264,7 +264,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running detection distribution check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b)
+      temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b, ...)
     }
 
     if("DistanceRelease_QC" %in% colnames(temporal_outcome))
@@ -273,7 +273,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance from release check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold)
+      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold, ...)
     }
 		
     if("ReleaseDate_QC" %in% colnames(temporal_outcome)) {
@@ -282,7 +282,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release date check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome)
+      temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome, ...)
     }
 
     if("ReleaseLocation_QC" %in% colnames(temporal_outcome) & !is.null(dist) & !is.null(shp_b)) {
@@ -290,7 +290,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release location check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format)
+      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format, ...)
     }
 		
 		## it might be better to keep all tests in temporal_outcome & just ensure
