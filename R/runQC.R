@@ -191,7 +191,8 @@ runQC <- function(x,
                shapefile = shapefile,
                fda_type = fda_type,
                dist_threshold = distance_threshold,
-               world_raster = world_raster), 
+               world_raster = world_raster,
+               ...), 
             silent = FALSE)
         
       } else if (data_format == "imos") {
