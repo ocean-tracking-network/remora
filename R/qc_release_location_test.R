@@ -32,15 +32,30 @@ qc_release_location_test <-
     message("Starting release location test.")
     ## Release location test
     if (!is.null(species_range)) {
-      message("We have a shapefile")
       species_range_spatial <- sf::as_Spatial(species_range)
+      
+      #Get the first nonzero result in the distances matrix, representing the first detection's distance from the receiver. 
+      nonzero <- which(distances!=0)
+      
+      #Also get the intersection of the release lat/lon and the species polygon.
+      intersect_val <- st_intersects(st_as_sf(latlons), st_as_sf(species_range))
+      #The above returns a slightly weird value- a list, containing either 1 (if the intersection is true) or a zero-length integer (if the intersection is false). 
+      #That's why we have to check with 'identical()' below- it's a good way to compare something to integer(0). 
+      
       qc_result[, "ReleaseLocation_QC"] <-
-        ifelse(distances[1] > release_loc_threshold &
-                 sum(is.na(
-                   sp::over(latlons, species_range_spatial, returnList = TRUE)
-                 )) > 0, 2, 1)
+          ifelse(
+            #Two criteria must be met for the test to fail:
+            all(
+              #The distance between the release and the first detection must be greater than the given distance threshold...
+              distances[nonzero] > release_loc_threshold, 
+              
+              #And the release must fall outside of the species home range polygon. 
+              identical(intersect_val[[1]], integer(0))), 
+            
+              #If both are false, then the test fails (i.e, receives a 2), if either (or both) is true, the test passes. 
+              2, 1
+          )
     } else {
-      message("We have no shapefile.")
       qc_result[, "ReleaseLocation_QC"] <-
         ifelse(distances[1] > release_loc_threshold, 2, 1)
     }

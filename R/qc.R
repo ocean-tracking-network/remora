@@ -131,7 +131,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     if (!is.na(x$transmitter_deployment_longitude[1])) {
       ll_r <-
         data.frame(x$transmitter_deployment_longitude[1], x$transmitter_deployment_latitude[1])
-      #message("Step two")
+
       ll_r <- SpatialPoints(ll_r, proj4string = CRS("EPSG:4326"))
       #coordinates(ll_r) <-
       #  ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.

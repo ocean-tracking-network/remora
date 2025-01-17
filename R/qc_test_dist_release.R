@@ -30,6 +30,7 @@ qc_test_dist_release <- function(data,
                             data$transmitter_deployment_latitude[rep(1, nrow(data))]),
                       cbind(data$longitude, data$latitude)) / 1000 ## return in km
     message("distGeo done.")
+    View(dist_r)
     qc_results[, "DistanceRelease_QC"] <- ifelse(dist_r > release_dist_threshold, 2, 1)
   } else {
     message("No transmitter lat/long in dataframe, skipping distance-from-release check.")
