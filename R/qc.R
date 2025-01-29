@@ -264,7 +264,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running detection distribution check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b, ...)
+      temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b)
     }
 
     if("DistanceRelease_QC" %in% colnames(temporal_outcome))
