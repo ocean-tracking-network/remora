@@ -36,7 +36,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                shapefile = NULL,
                fda_type = "time-diff",
                dist_threshold = 500,
-               world_raster = NULL) {
+               world_raster = NULL,
+               ...) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
   temporal_outcome <- data.frame(matrix(ncol = length(tests_vector), nrow = nrow(x)))
@@ -130,7 +131,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     if (!is.na(x$transmitter_deployment_longitude[1])) {
       ll_r <-
         data.frame(x$transmitter_deployment_longitude[1], x$transmitter_deployment_latitude[1])
-      #message("Step two")
+
       ll_r <- SpatialPoints(ll_r, proj4string = CRS("EPSG:4326"))
       #coordinates(ll_r) <-
       #  ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
@@ -196,7 +197,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     ## BD: added a check to not run the OTN version of this if shp_b is null
   	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
   	if(data_format == "otn") {
-  	  transition_layer <- make_transition2(sf::as_Spatial(shp_b))
+  	  resolution = scale_meters_to_degrees(transition_layer_res,shp_b)
+  	  transition_layer <- make_transition(st_as_sf(shp_b), res = resolution)
   	  tr <- transition_layer$transition
   	  print("Made transition layer")
   	}
@@ -243,7 +245,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running velocity check"),
             file = logfile,
             append = TRUE)
-    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist)
+    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist, ...)
     }
   
     if("Distance_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
@@ -251,7 +253,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance check"),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist)
+      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist, ...)
     }
 
 		message("Dist/velocity tests done.")
@@ -271,7 +273,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance from release check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold)
+      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold, ...)
     }
 		
     if("ReleaseDate_QC" %in% colnames(temporal_outcome)) {
@@ -280,7 +282,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release date check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome)
+      temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome, ...)
     }
 
     if("ReleaseLocation_QC" %in% colnames(temporal_outcome) & !is.null(dist) & !is.null(shp_b)) {
@@ -288,7 +290,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release location check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format)
+      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format, ...)
     }
 		
 		## it might be better to keep all tests in temporal_outcome & just ensure

@@ -94,7 +94,7 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
       ##   closest point on coastline, OR if there are two points on land belonging to
       ##   two distinct installations
       
-      ext.pts <- unlist(extract(raster, pts.sf, ID = FALSE))
+      ext.pts <- unlist(terra::extract(raster, pts.sf, ID = FALSE))
       
       if (any(any(sum(is.na(ext.pts)) == 1,
                   all(sum(
@@ -188,7 +188,7 @@ shortest_dist2 <- function(position, inst, raster = NULL, tr) {
         interp <-
           cbind(approx(c(pts[1, 1], pts[2, 1]), c(pts[1, 2], pts[2, 2]), n = 200)$x,
                 approx(c(pts[1, 1], pts[2, 1]), c(pts[1, 2], pts[2, 2]), n = 200)$y)
-        int <- unlist(extract(raster, interp))
+        int <- unlist(terra::extract(raster, interp))
       } else
         int <- c(NA, NA
         )

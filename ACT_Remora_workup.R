@@ -9,13 +9,16 @@ library(sf)
 library(sp)
 library(raster)
 library(stars)
-library(glatos)
 library(utils)
 library(geosphere)
 library(rangeBuilder)
 library(surimi)
 
-devtools::install_github("ocean-tracking-network/remora", force=TRUE)
+remove.packages('glatos')
+devtools::install_github("ocean-tracking-network/glatos", force=TRUE)
+library(glatos)
+remove.packages("remora")
+devtools::install_github("ocean-tracking-network/remora@notebook_updates", force=TRUE)
 library(remora)
 
 #setwd('Work/remora')
@@ -25,16 +28,22 @@ library(remora)
 
 world_raster <- raster::raster("./testDataOTN/NE2_50M_SR.tif")
 
-tests_vector <-  c("FDA_QC", #Is the detection likely to be false based on the Pincock/Remora algorithm?
+tests_vector <-  c(#"FDA_QC", #Is the detection likely to be false based on the Pincock/Remora algorithm?
                    "Velocity_QC", #Did the fish travel unrealistically fast?
                    "Distance_QC", #Did the fish travel unrealistically far?
-                   "DetectionDistribution_QC", #Was the fish detected outside its known home range?
-                   "DistanceRelease_QC", #Was the fish detected unrealistically far from the release?
-                   "ReleaseDate_QC", #Was the fish detected before the release date?
+                   #"DetectionDistribution_QC", #Was the fish detected outside its known home range?
+                   #"DistanceRelease_QC", #Was the fish detected unrealistically far from the release?
+                   #"ReleaseDate_QC", #Was the fish detected before the release date?
                    "ReleaseLocation_QC", #Was the release location within the home range OR within 500km of the first detection? 
                    "Detection_QC") #Aggregation of all the above tests, returning a value between 1 and 4.
 
-otn_files_ugacci <- list(det = "./testDataOTN/ugaaci_matched_detections_2017.csv")
+otn_files_ugacci <- list(det = "./testDataOTN/ugacci_matched_detections_2017_bogus.csv")
+
+#otn_bogus <- read.csv("./testDataOTN/ugaaci_matched_detections_2017.csv")
+
+otn_bogus$latitude <- 24
+
+write.csv(otn_bogus, "./testDataOTN/ugacci_matched_detections_2017_bogus.csv")
 
 scientific_name <- "Acipenser oxyrinchus"
 
@@ -44,9 +53,20 @@ sturgeonOccurrence <- getOccurrence(scientific_name)
 
 #Mostly work by Jessica Castellanos!
 #Takes just under 90 seconds to run.
-sturgeonPolygon <- createPolygon(sturgeonOccurrence, fraction=1, partsCount=1, buff=100000, clipToCoast = "aquatic")
+sturgeonList <- createPolygon(sturgeonOccurrence, fraction=1, partsCount=1, buff=100000, clipToCoast = "aquatic")
+
+sturgeonVector <- sturgeonList$vector
+sturgeonPolygon <- sturgeonList$polygon
 
 plot(sturgeonPolygon)
+
+#Parameters, which allows the user to pass parameters into the QC functions.
+velocity_threshold <- -1
+dist_threshold <- -1
+release_dist_threshold <- 500
+pincock_threshold <- 3600
+release_loc_threshold <- 0
+transition_layer_res <- 10000
 
 #Takes about 5.5m to run.
 otn_test_tag_qc <- runQC(otn_files_ugacci, 
@@ -56,7 +76,14 @@ otn_test_tag_qc <- runQC(otn_files_ugacci,
                          fda_type = "pincock", 
                          rollup = TRUE,
                          world_raster = world_raster,
-                         .parallel = FALSE, .progress = TRUE)
+                         .parallel = FALSE, 
+                         .progress = TRUE,
+                         velocity_threshold = velocity_threshold,
+                         dist_threshold = dist_threshold,
+                         release_dist_threshold = release_dist_threshold,
+                         pincock_threshold = pincock_threshold,
+                         release_loc_threshold = release_loc_threshold,
+                         transition_layer_res = transition_layer_res)
 
 #Mostly work by Ian Jonsen!
 plotQC(otn_test_tag_qc, distribution_shp = sturgeonPolygon, data_format = "otn")

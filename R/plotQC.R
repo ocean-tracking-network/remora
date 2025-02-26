@@ -55,7 +55,6 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
                                  species_common_name) %>%
       distinct(.keep_all = TRUE)
   }
-	View(species)
   
 	for (i in 1:nrow(species)){
 	  if(!is.null(distribution_shp)) {
@@ -87,8 +86,6 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 	  else if (data_format == "otn") {
 	    data <- subset(QCdata, WORMS_species_aphia_id == species$WORMS_species_aphia_id[i])
 	  }
-		
-	  View(data)
 	  
 		releases <- with(data, unique(data.frame(transmitter_id, 
 		                                         tag_id,
