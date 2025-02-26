@@ -32,7 +32,7 @@ qc_release_location_test <-
     message("Starting release location test.")
     ## Release location test
     if (!is.null(species_range)) {
-      species_range_spatial <- sf::as_Spatial(species_range)
+      #species_range_spatial <- sf::as_Spatial(species_range)
       
       #Get the first nonzero result in the distances matrix, representing the first detection's distance from the receiver. 
       nonzero <- which(distances!=0)

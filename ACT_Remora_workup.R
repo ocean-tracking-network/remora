@@ -37,7 +37,7 @@ tests_vector <-  c(#"FDA_QC", #Is the detection likely to be false based on the 
                    "ReleaseLocation_QC", #Was the release location within the home range OR within 500km of the first detection? 
                    "Detection_QC") #Aggregation of all the above tests, returning a value between 1 and 4.
 
-otn_files_ugacci <- list(det = "./testDataOTN/ugacci_matched_detections_2017_bogus.csv")
+otn_files_ugacci <- list(det = "./testDataOTN/ugaaci_matched_detections_2017.csv")
 
 #otn_bogus <- read.csv("./testDataOTN/ugaaci_matched_detections_2017.csv")
 
@@ -61,11 +61,11 @@ sturgeonPolygon <- sturgeonList$polygon
 plot(sturgeonPolygon)
 
 #Parameters, which allows the user to pass parameters into the QC functions.
-velocity_threshold <- -1
-dist_threshold <- -1
+velocity_threshold <- 10
+dist_threshold <- 10
 release_dist_threshold <- 500
 pincock_threshold <- 3600
-release_loc_threshold <- 0
+release_loc_threshold <- 500
 transition_layer_res <- 10000
 
 #Takes about 5.5m to run.
@@ -86,7 +86,7 @@ otn_test_tag_qc <- runQC(otn_files_ugacci,
                          transition_layer_res = transition_layer_res)
 
 #Mostly work by Ian Jonsen!
-plotQC(otn_test_tag_qc, distribution_shp = sturgeonPolygon, data_format = "otn")
+plotQC(otn_test_tag_qc, path="/Users/bruce/Desktop/testDataOTN/sturgeonMap.html", distribution_shp = sturgeonPolygon, data_format = "otn")
 
 
 otn_files_fsugg <- list(det = "/Users/bruce/Downloads/fsugg_matched_detections_2017/fsugg_matched_detections_2017.csv")
