@@ -125,7 +125,9 @@ get_data_arbitrary <- function(det=NULL,
   #We're gonna do the same merge but first we're going to take OTN formatted data and massage the columns into an IMOS-friendly setup.
   
   if(tolower(data_format) == "otn") {
-    processed_data <- surimi::otn_imos_column_map(det_data, rec_meta, tag_meta, derive=TRUE)
+    processed_data <- surimi::map_otn_file(det_data, derive=TRUE)
+    
+    #processed_data <- surimi::otn_imos_column_map(det_data, rec_meta, tag_meta, derive=TRUE)
     det_data <- processed_data$detections
     rec_meta <- processed_data$receivers
     tag_meta <- processed_data$tags
