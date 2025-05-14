@@ -73,17 +73,27 @@ get_data_arbitrary <- function(det=NULL,
   #Can't run without a detections file, makes sense.
   if(is.null(det)) stop("\033[31;1mCan not run QC without a detections file!\033[0m\n")
   
-  #Original version has a huge col_types specification here, we're not going to do that since it relies on column names that will not be held over in non-
-  #IMOS data formats.
-  #The string specification below SHOULD hold for OTN-formatted detection extracts. 
-  if(!is.null(col_spec)) {
-    det_data <- read_csv(det, na = c("", "null", "NA"), col_types = col_spec)
-  }
-  else {
-    det_data <- read_csv(det, na = c("", "null", "NA"))
+  #First thing we have to do: if the data is OTN-format, we have to haul it in and format it with Surimi.
+  if(tolower(data_format) == "otn") {
+    #This will determine if the code is parquet or CSV and load it appropriately.
+    processed_data <- surimi::map_otn_file(det, derive=TRUE)
+    
+    #processed_data <- surimi::otn_imos_column_map(det_data, rec_meta, tag_meta, derive=TRUE)
+    det_data <- processed_data$detections
+    rec_meta <- processed_data$receivers
+    tag_meta <- processed_data$tags
   }
   
-  
+  #This will preserve the loading process for IMOS-format data.
+  else if(tolower(data_format == "imos")) {
+    if(!is.null(col_spec)) {
+      det_data <- read_csv(det, na = c("", "null", "NA"), col_types = col_spec)
+    }
+    else {
+      det_data <- read_csv(det, na = c("", "null", "NA"))
+    }
+  }
+
   ## drop any unnamed columns, up to a possible 20 of them...
   # BD - There must be a nicer and more sensible way to drop unnamed columns. Also keep an eye out for whether or not this gets printed anywhere, 
   #some version of this should be made visible to the user. Also this exact code gets used multiple times, should probably be hived off into a function. 
@@ -119,18 +129,6 @@ get_data_arbitrary <- function(det=NULL,
     anim_meas <- read_csv(meas)
     
     anim_meas <- remove_unnamed_columns(anim_meas)
-  }
-  
-  #In the original column here follows some initial QC and a big merge of the four data files, complete with hardcoded column names.
-  #We're gonna do the same merge but first we're going to take OTN formatted data and massage the columns into an IMOS-friendly setup.
-  
-  if(tolower(data_format) == "otn") {
-    processed_data <- surimi::map_otn_file(det, derive=TRUE)
-    
-    #processed_data <- surimi::otn_imos_column_map(det_data, rec_meta, tag_meta, derive=TRUE)
-    det_data <- processed_data$detections
-    rec_meta <- processed_data$receivers
-    tag_meta <- processed_data$tags
   }
   
   #Check for and report any tags in detections but not in the tag metadata.
