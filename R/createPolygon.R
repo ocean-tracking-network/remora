@@ -41,10 +41,10 @@ createPolygon <- function(occurrences,
   
   #If bounds have been provided, use them to slim down the occurrences. 
   if(!is.null(bounds)) {
-    occurrence <- occurrence[occurrence$decimalLatitude > bounds$minLat & 
-                                      occurrence$decimalLatitude < bounds$maxLat &
-                                      occurrence$decimalLongitude > bounds$minLon &
-                                      occurrence$decimalLongitude < bounds$maxLon,]
+    occurrence <- occurrence[occurrence$decimalLatitude > bounds[1] & 
+                                      occurrence$decimalLatitude < bounds[2] &
+                                      occurrence$decimalLongitude > bounds[3] &
+                                      occurrence$decimalLongitude < bounds[4],]
   }
   
   #Using the R package rangeBuilder to generate an alpha hull polygon which defines a concave hull or boundary around a set of points in two or three dimensions. 
