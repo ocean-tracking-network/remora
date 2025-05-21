@@ -28,7 +28,8 @@ createPolygon <- function(occurrences,
                           buffer = 1000, 
                           partsCount = 20,  
                           coordHeaders = c("decimallongitude", "decimallatitude"), 
-                          clipToCoast = "aquatic") {
+                          clipToCoast = "aquatic",
+                          bounds = NULL) {
   
   if(typeof(occurrences) == "character") {
     #Read in the occurrence CSV. 
@@ -36,6 +37,14 @@ createPolygon <- function(occurrences,
   }
   else {
     occurrence <- occurrences
+  }
+  
+  #If bounds have been provided, use them to slim down the occurrences. 
+  if(!is.null(bounds)) {
+    occurrence <- occurrence[occurrence$decimalLatitude > bounds$minLat & 
+                                      occurrence$decimalLatitude < bounds$maxLat &
+                                      occurrence$decimalLongitude > bounds$minLon &
+                                      occurrence$decimalLongitude < bounds$maxLon,]
   }
   
   #Using the R package rangeBuilder to generate an alpha hull polygon which defines a concave hull or boundary around a set of points in two or three dimensions. 
@@ -56,7 +65,6 @@ createPolygon <- function(occurrences,
   #EDIT: I found a different package, voluModel, that wraps the getDynamicAlphaHull function with a bunch of extra greeblies specifically for converting occurrence data into
   #shapefiles for oceangoing species. Subbed that in here, but most of the parameters are the same. ClipToOcean is added by marineBackground and will automatically drop any chunks of the
   #polygon that don't contain actual occurrences and are just generated as artefacts of the hull-making process.
-  message("About to run voluModel")
   
   occurrenceVector <- voluModel::marineBackground(occurrence, 
                                   fraction = fraction, 
