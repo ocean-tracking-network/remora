@@ -10,7 +10,8 @@ createPolygon(
   buffer = 1000,
   partsCount = 20,
   coordHeaders = c("decimallongitude", "decimallatitude"),
-  clipToCoast = "aquatic"
+  clipToCoast = "aquatic",
+  bounds = NULL
 )
 }
 \arguments{
