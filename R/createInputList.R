@@ -14,7 +14,7 @@ createInputList <- function(path) {
   files <- NULL
   
   #Check to see if the path supplied is that of a directory.
-  if(dir.exists(path) && !file.exists(path)) {
+  if(dir.exists(path)) {
     #If so, make 'files' a vector containing the files within the directory. Use the absolute paths. 
     files <- list.files(path, full.names=TRUE)
   }
