@@ -4,12 +4,7 @@
 \alias{qc_false_detection_test}
 \title{QC False Detection Test}
 \usage{
-qc_false_detection_test(
-  data,
-  qc_result,
-  type = "time_diff",
-  pincock_threshold = 3600
-)
+qc_false_detection_test(data, qc_result, type = "time_diff", ...)
 }
 \arguments{
 \item{data}{data formatted by either \code{remora::get_data} or \code{remora::get_data_arbitrary}}

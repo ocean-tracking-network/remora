@@ -14,7 +14,8 @@ qc(
   shapefile = NULL,
   fda_type = "time-diff",
   dist_threshold = 500,
-  world_raster = NULL
+  world_raster = NULL,
+  ...
 )
 }
 \arguments{

@@ -1,56 +1,37 @@
-##' @title generate shapefiles and transition layers
+##' @title Generate the polygon for a species' home range for use in the QC run.
 ##' 
-##' @description generate shapefiles and transition layers for QC based on user-supplied parameters
+##' @description Wrap a call to getOccurrence and createPolygon so that the user can supply all their parameters at once and get the polygon back in one call. 
 ##' 
-##' @param detection_extract ...
-##' @param shapefile ...
-##' @param worldimage ...
+##' @param scientificName The scientific name of the animal
+##' @param fraction passed directly through to createPolygon
+##' @param partsCount passed directly through to createPolygon
+##' @param buff passed directly through to createPolygon
+##' @param clipToCoast passed directly through to createPolygon
+##' @param bounds passed directly through to createPolygon
 ##' 
-##' @return a list of cropped shapefile, transition layer, and world raster
+##' @return The polygon representing the species home range. 
 ##' 
-##' @importFrom sf st_crop st_bbox
-##' @importFrom raster raster crop
-##' @importFrom glatos make_transition
-##' 
-##' @keywords internal
+##' @export
 
-get_qc_shapes <- function(detection_extract,
-                          shapefile,
-                          worldimage = "./testDataOTN/NE2_50M_SR.tif") {
+get_qc_shapes <- function(scientificName, 
+                          fraction=1, 
+                          partsCount=1, 
+                          buff=500000, 
+                          clipToCoast = "aquatic", 
+                          bounds=bounds) {
   
 
-  if(!inherits(detection_extract, "sf")) {
-    minLat = min(detection_extract$latitude) - 5
-    minLon = min(detection_extract$longitude) - 5
-    maxLat = max(detection_extract$latitude) + 5
-    maxLon = max(detection_extract$longitude) + 5
-    #Crop the range shapefile
-    shapefile_crop <- st_crop(shapefile,  xmin=minLon, ymin=minLat, xmax=maxLon, ymax=maxLat)
-  } else {
-    ext <- st_bbox(detection_extract)
-    ext[1] <- ext[1] + 5 * sign(ext[1])
-    ext[2] <- ext[2] + 5 * sign(ext[2])
-    ext[3] <- ext[3] + 5 * sign(ext[3])
-    ext[4] <- ext[4] + 5 * sign(ext[4])
-    #Crop the range shapefile
-    shapefile_crop <- st_crop(shapefile,  ext)
-  }
-
-  #Generate a transition layer
-  transition_layer <- make_transition(st_as_sf(shapefile_crop))
+  #Start by getting the occurrence data.
+  speciesOccurrence <- getOccurrence(scientificName)
   
-  #Crop the world raster
-  if(file.exists(worldimage)) {
-    world_raster <- raster(worldimage)
-  }
-  else {
-    world_raster <- worldimage
-  }
+  #Once we have that, generate the polygon info. 
+  speciesList <- createPolygon(speciesOccurrence, fraction=1, partsCount=1, buff=500000, clipToCoast = "aquatic", bounds=bounds)
   
-  world_raster_crop <- crop(world_raster, shapefile_crop)
+  #At this time we don't use speciesVector for anything, but it's being generated so I'll leave it here in case we need it for something later. 
+  speciesVector <- speciesList$vector
   
-  return(
-    list(shapefile_crop, transition_layer, world_raster_crop)
-  )
+  #Here's the polygon we want. 
+  speciesPolygon <- speciesList$polygon
   
+  return(speciesPolygon)
 }

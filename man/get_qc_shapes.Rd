@@ -2,25 +2,33 @@
 % Please edit documentation in R/get_qc_shapes.R
 \name{get_qc_shapes}
 \alias{get_qc_shapes}
-\title{generate shapefiles and transition layers}
+\title{Generate the polygon for a species' home range for use in the QC run.}
 \usage{
 get_qc_shapes(
-  detection_extract,
-  shapefile,
-  worldimage = "./testDataOTN/NE2_50M_SR.tif"
+  scientificName,
+  fraction = 1,
+  partsCount = 1,
+  buff = 5e+05,
+  clipToCoast = "aquatic",
+  bounds = bounds
 )
 }
 \arguments{
-\item{detection_extract}{...}
+\item{scientificName}{The scientific name of the animal}
 
-\item{shapefile}{...}
+\item{fraction}{passed directly through to createPolygon}
 
-\item{worldimage}{...}
+\item{partsCount}{passed directly through to createPolygon}
+
+\item{buff}{passed directly through to createPolygon}
+
+\item{clipToCoast}{passed directly through to createPolygon}
+
+\item{bounds}{passed directly through to createPolygon}
 }
 \value{
-a list of cropped shapefile, transition layer, and world raster
+The polygon representing the species home range.
 }
 \description{
-generate shapefiles and transition layers for QC based on user-supplied parameters
+Wrap a call to getOccurrence and createPolygon so that the user can supply all their parameters at once and get the polygon back in one call.
 }
-\keyword{internal}

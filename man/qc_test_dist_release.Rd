@@ -4,7 +4,7 @@
 \alias{qc_test_dist_release}
 \title{QC Distance Release test}
 \usage{
-qc_test_dist_release(data, qc_results, distance_threshold = 500)
+qc_test_dist_release(data, qc_results, ...)
 }
 \arguments{
 \item{data}{data formatted by either \code{remora::get_data} or \code{remora::get_data_arbitrary}}
