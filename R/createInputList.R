@@ -34,43 +34,64 @@ createInputList <- function(path) {
     ignored <- FALSE
     
     for(filename in files) {
-      message(filename)
       #If it's a parquet file, then we know immediately it's a detections file. 
       if(file_ext(filename) == "parquet") {
         message("Parquet File", filename)
         dets <- append(dets, filename)
       }
       
-      #Otherwise, we need to check it out- as long as it's a CSV file. (Do we also need to handle Excel?)
-      else if(file_ext(filename) == "csv") {
-        #Open the first line of the file.
-        row <- read.csv(filename, na = c("", "null", "NA"))
-        
-        View(row)
-        
-        #Now check to see which indicator columns are present.
-        
-        #If INS_MODEL_NO is present, it's receiver metadata.
-        if ("INS_MODEL_NO" %in% names(row)) {
-          rcvr <- append(rcvr, filename)
-        }
-        else if("TAG_TYPE" %in% names(row)) {
-          tag <- append(tag, filename)
-        }
-        else {
+      #Otherwise, we need to check it out- as long as it's a CSV or XLSX file.
+      else {
+        if(file_ext(filename) == "csv") {
+          #If it's CSV data then it's detection data and we can interpret it as such. 
+          message("File ", filename, " interpreted as detection data.")
           dets <- append(dets, filename)
         }
-      }
-      
-      #If we encounter a file that isn't either of the above we'll set 'ignored' to TRUE and at the end we'll
-      #Let the user know that we have ignored some files on the basis of their extensions. Handy diagnostic.
-      else {
-        ignored <- TRUE
+        else if(file_ext(filename) == "xlsx" || file_ext(filename) == "xls"){
+          #If it's an excel file then we need to determine if it's Tag or Receiver metdata.
+          #Let's start by getting the sheets.
+          sheets <- excel_sheets(filename)
+          #row <- read_excel(filename, sheet=2, skip=3,  na = c("", "null", "NA"))
+       
+          #We might get lucky and have an obvious sheet name.
+          #If 'Tagging' or 'Tag Metadata' in in the list, then it's tag metadata. 
+          if("Tag Metadata" %in% sheets || "Tagging" %in% sheets) {
+            message("File ", filename, " interpreted as tag metadata.")
+            tag <- append(tag, filename)
+          }
+          #If 'Deployment' is in the file header, then we know it's receiver metadata.
+          else if("Deployment" %in% sheets) {
+            message("File ", filename, " interpreted as receiver metadata.")
+            rcvr <- append(rcvr, filename)
+          }
+          #However, we can't account for every conceivable name that someone might use for their sheet, so we're going to adapt a version of the shortform processing code to iterate over the first ~10 rows to find the headers,
+          #which we can then use to determine what kind of file this is. 
+          else {
+            skip_rows = 0
+            num_of_skips = 10
+            while(skip_rows < num_of_skips) {
+              columnset = read_excel(filename, sheet=2, skip=skip_rows,  na = c("", "null", "NA"))
+              columnset = colnames(columnset)
+              
+              if('INS_MODEL_NO' %in% columnset) {
+                message("File ", filename, " interpreted as receiver metadata.")
+                rcvr <- append(rcvr, filename)
+                break
+              }
+              else if("TAG_TYPE" %in% columnset) {
+                message("File ", filename, " interpreted as tag metadata.")
+                tag <- append(tag, filename)
+                break
+              }
+              else {
+                skip_rows <- skip_rows + 1 
+              }
+            }
+          }
+          message("File ", filename, " could not be interpreted and was ignored.")
+        }
       }
     }
-    
-    View(rcvr)
-    View(tag)
     
     #Having processed all our filenames, we now need to aggregate tags and receivers into single files (each). 
     tag_return = processMeta(tag)
@@ -79,7 +100,7 @@ createInputList <- function(path) {
     rcvr_return = processMeta(rcvr)
     
     return_info <- list("dets" = dets, "rcvr" = rcvr_return, "tags" = tag_return)
-    View(return_info)
+    #View(return_info)
     return(return_info)
   }
   #Otherwise, if it's a file, then return the filename in an iterable list.
@@ -104,12 +125,7 @@ processMeta <- function(metaList) {
     return_frame <- data.frame()
     
     for(file in metaList) {
-      if(file_ext(file) == "csv"){
-        metadata <- read.csv(file)
-      }
-      else if (file_ext(file) == "xls" || file_ext(file == "xlsx")){
-        metadata <- read_excel(file)
-      }
+      metadata <- read_excel(file, sheet=2, skip=3,  na = c("", "null", "NA"))
       
       rbind(return_frame, metadata)
     }

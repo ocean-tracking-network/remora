@@ -50,7 +50,7 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
       distinct(.keep_all = TRUE)
   }
   else if(data_format == 'otn') {
-    species <- QCdata %>% select(WORMS_species_aphia_id, 
+    species <- QCdata %>% dplyr::select(WORMS_species_aphia_id, 
                                  species_scientific_name, 
                                  species_common_name) %>%
       distinct(.keep_all = TRUE)
