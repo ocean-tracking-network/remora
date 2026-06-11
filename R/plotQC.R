@@ -93,6 +93,7 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 		                                         transmitter_deployment_longitude,
 		                                         transmitter_deployment_latitude,
 		                                         ReleaseLocation_QC)))
+		View(releases)
 		
 		 data <- data[, c('transmitter_id',
 		                  'tag_id',

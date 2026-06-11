@@ -129,7 +129,7 @@ runQC <- function(x,
     inputList <- x
   }
   
-  View(inputList)
+  #View(inputList)
   
   rmeta <- inputList$rmeta
   tmeta <- inputList$tmeta
@@ -252,7 +252,6 @@ runQC <- function(x,
     out <- nest_by(tmp, filename, .key = "QC")
     class(out) <- append("remora_QC", class(out))
     
-    View(out)
     outList[[outIndex]] <- out
     outIndex = outIndex + 1
   

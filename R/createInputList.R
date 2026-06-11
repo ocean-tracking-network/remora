@@ -27,11 +27,11 @@ createInputList <- function(path) {
     #every QC run. 
     
     
-    #These will hold data as we go, but the thing we return is going to be a vector containing the list of detection filenames plus the filenames for the aggregated tag/receiver files. 
+    #These will hold data as we go, but the thing we return is going to be a vector containing the list of detection filenames plus the dataframes for receiver and tag metadata.
+    #We're including the metadata as dataframes because we already have to open and read in the files as we go anyway, so we might as well aggregate them here rather than elsewhere.
     dets <- c()
-    rcvr <- c()
-    tag <- c()
-    ignored <- FALSE
+    rmeta <- NULL
+    tmeta <- NULL
     
     for(filename in files) {
       #If it's a parquet file, then we know immediately it's a detections file. 
@@ -49,57 +49,46 @@ createInputList <- function(path) {
         }
         else if(file_ext(filename) == "xlsx" || file_ext(filename) == "xls"){
           #If it's an excel file then we need to determine if it's Tag or Receiver metdata.
-          #Let's start by getting the sheets.
-          sheets <- excel_sheets(filename)
-          #row <- read_excel(filename, sheet=2, skip=3,  na = c("", "null", "NA"))
-       
-          #We might get lucky and have an obvious sheet name.
-          #If 'Tagging' or 'Tag Metadata' in in the list, then it's tag metadata. 
-          if("Tag Metadata" %in% sheets || "Tagging" %in% sheets) {
-            message("File ", filename, " interpreted as tag metadata.")
-            tag <- append(tag, filename)
-          }
-          #If 'Deployment' is in the file header, then we know it's receiver metadata.
-          else if("Deployment" %in% sheets) {
-            message("File ", filename, " interpreted as receiver metadata.")
-            rcvr <- append(rcvr, filename)
-          }
-          #However, we can't account for every conceivable name that someone might use for their sheet, so we're going to adapt a version of the shortform processing code to iterate over the first ~10 rows to find the headers,
+          
+          #Leaving this here as a reminder to myself that we will need to account for the possibility of multiple sheets containing tagging metadata.
+          #sheets <- excel_sheets(filename)
+          
+          #We can't account for every conceivable name that someone might use for their sheet, so we're going to adapt a version of the shortform processing code to iterate over the first ~10 rows to find the headers,
           #which we can then use to determine what kind of file this is. 
-          else {
-            skip_rows = 0
-            num_of_skips = 10
-            while(skip_rows < num_of_skips) {
-              columnset = read_excel(filename, sheet=2, skip=skip_rows,  na = c("", "null", "NA"))
-              columnset = colnames(columnset)
-              
-              if('INS_MODEL_NO' %in% columnset) {
-                message("File ", filename, " interpreted as receiver metadata.")
-                rcvr <- append(rcvr, filename)
-                break
-              }
-              else if("TAG_TYPE" %in% columnset) {
-                message("File ", filename, " interpreted as tag metadata.")
-                tag <- append(tag, filename)
-                break
-              }
-              else {
-                skip_rows <- skip_rows + 1 
-              }
+          skip_rows = 0
+          num_of_skips = 10
+          
+          while(skip_rows < num_of_skips) {
+            #Read the data and grab the column names. 
+            data = read_excel(filename, sheet=2, skip=skip_rows,  na = c("", "null", "NA"))
+            columnset = colnames(data)
+            
+            #If INS_MODEL_NO is in the columns, then we have receiver metadata.
+            if('INS_MODEL_NO' %in% columnset) {
+              message("File ", filename, " interpreted as receiver metadata.")
+              rmeta <- processMeta(data, rmeta)
+              break
+            }
+            #If TAG_TYPE is in the column names, then it's tag metadata.
+            else if("TAG_TYPE" %in% columnset) {
+              message("File ", filename, " interpreted as tag metadata.")
+              tmeta <- processMeta(data, tmeta)
+              break
+            }
+            #Otherwise, iterate over to the next phase of the loop. 
+            else {
+              skip_rows <- skip_rows + 1 
             }
           }
+        }
+        else {
+          #If a file is neither CSV nor XLS(X), let the user know we couldn't do anything with it. 
           message("File ", filename, " could not be interpreted and was ignored.")
         }
       }
     }
     
-    #Having processed all our filenames, we now need to aggregate tags and receivers into single files (each). 
-    tag_return = processMeta(tag)
-    
-    #Now we do the same for the receiver data.
-    rcvr_return = processMeta(rcvr)
-    
-    return_info <- list("dets" = dets, "rcvr" = rcvr_return, "tags" = tag_return)
+    return_info <- list("dets" = dets, "rmeta" = rmeta, "tmeta" = tmeta)
     #View(return_info)
     return(return_info)
   }
@@ -117,21 +106,24 @@ createInputList <- function(path) {
   return(files)
 }
 
-processMeta <- function(metaList) {
-  if(length(metaList) == 1) {
-    return(metaList[[1]])
+#Helper function to do the ongoing aggregation of metadata from the function above. "Data" is the data to be added, while "metadata" in the object to which it will be added.
+processMeta <- function(data, metadata) {
+  #If metadata is null (i.e, hasn't been created yet) then we can return data and call it good.
+  if(is.null(metadata)) {
+    return(data)
   }
+  
+  #Otherwise, we have to aggregate data and metadata.
   else {
-    return_frame <- data.frame()
+    #Bind them together.
+    metadata <- rbind(metadata, data)
     
-    for(file in metaList) {
-      metadata <- read_excel(file, sheet=2, skip=3,  na = c("", "null", "NA"))
-      
-      rbind(return_frame, metadata)
-    }
+    #Get rid of any duplicates.
+    metadata <- metadata[!duplicated(metadata), ]
     
-    return_frame <- return_frame[!duplicated(return_frame), ]
-    return(return_frame)
+    #Return the newly aggregated metadata.
+    return(metadata)
   }
+  #Cheeky little return juuuust in case.
   return(NULL)
 }
