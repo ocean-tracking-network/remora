@@ -19,6 +19,7 @@
 ##' @importFrom glatos make_transition2
 ##' @importFrom dplyr %>% bind_cols
 ##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates
+##' @import stringr str_to_camel
 ##'
 ##' @keywords internal
 ##'
@@ -108,7 +109,9 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     }
     else if(is.list(shapefile)) {
       species <- unique(x$species_scientific_name)
-      shp_b <- shapefile[species]
+      message(paste0("Species: ", species))
+      species <- str_to_camel(species)
+      shp_b <- shapefile[[species]]$geometry
     }
     else {
       shp_b <- shapefile  

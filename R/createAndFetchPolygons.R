@@ -24,7 +24,7 @@ createAndFetchPolygons <- function(sciNames, occurrenceFolder="localOccurrenceDa
       
       speciesPolygon <- read_sf(polygonFilename)
       
-      polygons[[scientificName]] <- speciesPolygon
+      polygons[[scientificName]] <- speciesPolygon$polygon
     }
     
     #If not that, then we'll check to see if an occurrence CSV exists.

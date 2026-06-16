@@ -28,7 +28,6 @@ qc_test_det_distro <- function(data,
   #proj4string(latlons) <- CRS("+proj=longlat +datum=WGS84")
   if(!is.null(species_range)) {
     print("Need to do some debug in det distro")
-    print(over(latlons, as_Spatial(species_range)))
     out <- which(is.na(over(latlons, as_Spatial(species_range))))
     print(out)
     if(length(out) > 0) {
