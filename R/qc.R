@@ -104,8 +104,15 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   } else if (data_format == "otn") {
     if(is.null(shapefile)) {
       message("WARNING: No shapefile supplied. Some tests may not run.")
+      shp_b <- NULL
     }
-    shp_b <- shapefile
+    else if(is.list(shapefile)) {
+      species <- unique(x$species_scientific_name)
+      shp_b <- shapefile[species]
+    }
+    else {
+      shp_b <- shapefile  
+    }  
   }
   write(paste0(x$filename[1],
                ":  "," Shapefile Grab done."),
