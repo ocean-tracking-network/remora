@@ -119,136 +119,165 @@ runQC <- function(x,
                    .progress = TRUE,
                   ...) {
 
-  ## check if n_cores <= detectCores else return warning
-  if(.ncores > detectCores())
-    warning("process to be run across more cores than available, this may not be efficient",
-            call. = FALSE, immediate. = TRUE)
+  #We're going to allow two kinds of input: a path to a folder, or an array of det/rmeta/tmeta like the original. This preserves functionality for current users while still letting us do batch processing.
+  inputList <- list()
+  if(typeof(x) == "character")
+  {
+    inputList <- createInputList(x)
+  }
+  else {
+    inputList <- x
+  }
   
-  ## create logfile object to record QC warnings
-  ## write logfile to working directory
-  logfile <- "QC_logfile.txt"
-  write("", file = logfile)
-
-  message("Reading data...")
-  ## IDJ: add conditional to use arbitrary or canonical get_data fn
-  all_data <- switch(data_format,
-                     otn = {
-                       get_data_arbitrary(
-                         det = x$det,
-                         rmeta = x$rmeta,
-                         tmeta = x$tmeta,
-                         meas = x$meas,
-                         logfile = logfile,
-                         data_format = "otn",
-                         col_spec = col_spec
-                       )
-                     },
-                     imos = {
-                       get_data(
-                         det = x$det,
-                         rmeta = x$rmeta,
-                         tmeta = x$tmeta,
-                         meas = x$meas,
-                         logfile = logfile
-                       )
-                     })
+  #View(inputList)
   
-  #Set up a raster for the world (temporary while I test the QC functions that require shapefiles to work)
-  #world_raster <- readOGR(dsn = 
-                           # file.path("/Users/bruce/Downloads/Land_Masses_and_Ocean_Islands/Land_Masses_and_Ocean_Islands.shp"),
-                         # verbose = F)
+  rmeta <- inputList$rmeta
+  tmeta <- inputList$tmeta
+  meas <- inputList$meas
   
-  ## Apply QC tests on detections
-  if(.parallel) {
-    message("Starting parallel QC...")
-    plan("multisession", workers = .ncores)
-
-    QC_result <- future_map(all_data, 
-                            try(qc, silent = TRUE), 
-                            Lcheck = lat.check, 
-                            logfile, 
-                            .progress = .progress, 
-                            .options = furrr_options(seed = TRUE))
-
-    plan("sequential")
-  } else {
-    message("Starting sequential QC...")
-    QC_result <- lapply(1:length(all_data), function(i) {
-      if(.progress) {
-        cat("\r", "file: ", all_data[[i]]$filename[1], ", ", i, " of ", length(all_data), "    ", sep = "")
-        flush.console()
-      }
-      
-      if(data_format == "otn") {
-        message("Starting OTN QC")
-        try(qc(all_data[[i]],
-               Lcheck = FALSE,
-               logfile,
-               tests_vector,
-               data_format = "otn",
-               shapefile = shapefile,
-               fda_type = fda_type,
-               world_raster = world_raster,
-               ...), 
-            silent = FALSE)
+  outList <- list()
+  outIndex <- 1
+  for(detFile in inputList$det) {
+    message(paste("Now processing file:", detFile))
+    ## check if n_cores <= detectCores else return warning
+    if(.ncores > detectCores())
+      warning("process to be run across more cores than available, this may not be efficient",
+              call. = FALSE, immediate. = TRUE)
+    
+    ## create logfile object to record QC warnings
+    ## write logfile to working directory
+    logfile <- "QC_logfile.txt"
+    write("", file = logfile)
+  
+    message("Reading data...")
+    ## IDJ: add conditional to use arbitrary or canonical get_data fn
+    all_data <- switch(data_format,
+                       otn = {
+                         get_data_arbitrary(
+                           det = detFile,
+                           rmeta = rmeta,
+                           tmeta = tmeta,
+                           meas = meas,
+                           logfile = logfile,
+                           data_format = "otn",
+                           col_spec = col_spec
+                         )
+                       },
+                       imos = {
+                         get_data(
+                           det = detfile,
+                           rmeta = rmeta,
+                           tmeta = tmeta,
+                           meas = meas,
+                           logfile = logfile
+                         )
+                       })
+    
+    #Set up a raster for the world (temporary while I test the QC functions that require shapefiles to work)
+    #world_raster <- readOGR(dsn = 
+                             # file.path("/Users/bruce/Downloads/Land_Masses_and_Ocean_Islands/Land_Masses_and_Ocean_Islands.shp"),
+                           # verbose = F)
+    
+    ## Apply QC tests on detections
+    if(.parallel) {
+      message("Starting parallel QC...")
+      plan("multisession", workers = .ncores)
+  
+      QC_result <- future_map(all_data, 
+                              try(qc, silent = TRUE), 
+                              Lcheck = lat.check, 
+                              logfile, 
+                              .progress = .progress, 
+                              .options = furrr_options(seed = TRUE))
+  
+      plan("sequential")
+    } else {
+      message("Starting sequential QC...")
+      QC_result <- lapply(1:length(all_data), function(i) {
+        if(.progress) {
+          cat("\r", "file: ", all_data[[i]]$filename[1], ", ", i, " of ", length(all_data), "    ", sep = "")
+          flush.console()
+        }
         
-      } else if (data_format == "imos") {
-        suppressMessages(try(qc(all_data[[i]],
-                                Lcheck = lat.check,
-                                logfile,
-                                tests_vector,
-                                data_format = "imos"),
-                             silent = TRUE)
+        if(data_format == "otn") {
+          message("Starting OTN QC")
+          try(qc(all_data[[i]],
+                 Lcheck = FALSE,
+                 logfile,
+                 tests_vector,
+                 data_format = "otn",
+                 shapefile = shapefile,
+                 fda_type = fda_type,
+                 world_raster = world_raster,
+                 ...), 
+              silent = FALSE)
+          
+        } else if (data_format == "imos") {
+          suppressMessages(try(qc(all_data[[i]],
+                                  Lcheck = lat.check,
+                                  logfile,
+                                  tests_vector,
+                                  data_format = "imos"),
+                               silent = TRUE)
+          )
+        }
+        
+       })
+  
+      cat("\n")
+    }
+  
+    ## warn of any QC failures
+    fails <- sapply(QC_result, function(x) inherits(x, "try-error"))
+    nfail <- sum(fails)
+    ## write `try-error` to logfile
+    if(nfail > 0) {
+      warning(paste(nfail, "tag detection file(s) could not be QC'd"),
+              call. = FALSE, immediate. = TRUE)
+      xfail <- all_data[fails]
+      lapply(1:length(xfail), function(i) {
+        write(paste0(xfail[[i]]$filename[1], ":  QC error: ", QC_result[[i]]),
+          file = logfile,
+          append = TRUE
         )
-      }
-      
-     })
-
-    cat("\n")
-  }
-
-  ## warn of any QC failures
-  fails <- sapply(QC_result, function(x) inherits(x, "try-error"))
-  nfail <- sum(fails)
-  ## write `try-error` to logfile
-  if(nfail > 0) {
-    warning(paste(nfail, "tag detection file(s) could not be QC'd"),
-            call. = FALSE, immediate. = TRUE)
-    xfail <- all_data[fails]
-    lapply(1:length(xfail), function(i) {
-      write(paste0(xfail[[i]]$filename[1], ":  QC error: ", QC_result[[i]]),
-        file = logfile,
-        append = TRUE
-      )
-    })
-  }
-
-  ## notify if any entries in QC logfile
-  if(file.size(logfile) > 1) {
-    message("\n Please see ", logfile, " for potential data, metadata issues and/or QC error messages\n")
-  }
-  ## IDJ: modified so fn returns QC results for any tags that did not fail the QC
-  tmp <- bind_rows(QC_result[!fails])
-  out <- nest_by(tmp, filename, .key = "QC")
-  class(out) <- append("remora_QC", class(out))
-
-  ## warn if any NA's in detection_datetime (caused by impossible dates,
-  ##  eg. 30 Feb or 31 Feb)
-  NA_datetime <- sapply(out$QC, function(x) sum(is.na(x$detection_datetime)) > 0)
-  if(sum(NA_datetime) > 0) {
-    warning(paste("NA's found in `detection_datetime` for:",
-                  out$filename[NA_datetime], "\n"),
-            call. = FALSE,
-            immediate. = TRUE)
-  }
-
-  if(rollup == TRUE) {
-    #Start by writing out the QC
-    #Don't alter the path, so then we can assume it based on where we're at. 
-    writeQC(out, aggregate = TRUE)
-    rolled_output <- surimi::rollup(x$det, "aggregatedQC.csv")
-    write.csv(rolled_output, file="rolled_output.csv")
+      })
+    }
+  
+    ## notify if any entries in QC logfile
+    if(file.size(logfile) > 1) {
+      message("\n Please see ", logfile, " for potential data, metadata issues and/or QC error messages\n")
+    }
+    ## IDJ: modified so fn returns QC results for any tags that did not fail the QC
+    tmp <- bind_rows(QC_result[!fails])
+    out <- nest_by(tmp, filename, .key = "QC")
+    class(out) <- append("remora_QC", class(out))
+    
+    outList[[outIndex]] <- out
+    outIndex = outIndex + 1
+  
+    ## warn if any NA's in detection_datetime (caused by impossible dates,
+    ##  eg. 30 Feb or 31 Feb)
+    NA_datetime <- sapply(out$QC, function(x) sum(is.na(x$detection_datetime)) > 0)
+    if(sum(NA_datetime) > 0) {
+      warning(paste("NA's found in `detection_datetime` for:",
+                    out$filename[NA_datetime], "\n"),
+              call. = FALSE,
+              immediate. = TRUE)
+    }
+  
+    if(rollup == TRUE) {
+      #Start by writing out the QC
+      #Don't alter the path, so then we can assume it based on where we're at. 
+      writeQC(out, aggregate = TRUE)
+      rolled_output <- surimi::rollup(x$det, "aggregatedQC.csv")
+      write.csv(rolled_output, file="rolled_output.csv")
+    }
   }
   
-  return(out)
+  if(length(outList) == 1) {
+    return(outList[[1]])
+  }
+  else {
+    return(outList)
+  }
 }
