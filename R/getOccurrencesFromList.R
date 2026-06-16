@@ -4,21 +4,27 @@
 ##' to a different function. 
 ##'
 ##' @param sciNames The list of scientific names you want to query (if you only supply one name, it will pass it straight through to getOccurrence)
+##' @param save Whether or not to save the occurrence files as CSVs locally, for access later.
+##' @param saveFolder The local location in which to store occurrence data as CSVs. 
 ##' 
 ##' @details Takes the scientific name and uses it to get an AphiaID that can then be used to query OBIS and GBIF. 
 ##'
 ##' @return Returns a list of dataframes representing occurrence data for the fish in question. 
 ##'
-##' @importFrom httr2 resp_body_json
-##' @importFrom worrms wm_name2id
-##' @importFrom robis occurrence
-##' @importFrom rgbif occ_data
+##' @importFrom utils write.csv
+##' @importFrom stringr str_to_camel
+##'
 ##' @export
 
-getOccurrencesFromList <- function(sciNames) {
+getOccurrencesFromList <- function(sciNames, save=FALSE, saveFolder = "localOccurrenceData/") {
     #If someone just passes a single sciName, as though this were getOccurrence, pass it through and return the result. 
     if(is.character(sciNames)) {
-      return(getOccurrence(sciNames))
+      occurrenceOutput <- getOccurrence(sciNames)
+    
+      if(save == TRUE) {
+        fileName = paste0(str_to_camel(sciNames), ".csv")
+        write.csv(occurrenceOutput, file=paste0(saveFolder, fileName))
+      }
     }
     #Otherwise, we have to operate on the list itself. 
     else {
@@ -29,9 +35,15 @@ getOccurrencesFromList <- function(sciNames) {
         #Get the occurrence and add it to the list.
         message(sciNames[[index]])
         occurrenceOutput[[index]] <- getOccurrence(sciNames[[index]])
+        
+        #If we're being told to save it all as CSVs...
+        if(save == TRUE) {
+          fileName = paste0(str_to_camel(sciNames[[index]]), ".csv")
+          write.csv(occurrenceOutput[[index]], file=paste0(saveFolder, fileName))
+        }
       }
-      
-      #When we're done, return the list of our occurrence data. 
-      return(occurrenceOutput)
     }
+  
+    #When we're done, return the list of our occurrence data. 
+    return(occurrenceOutput)
 }

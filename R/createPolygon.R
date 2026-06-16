@@ -74,9 +74,6 @@ createPolygon <- function(occurrences,
                                   clipToCoast = clipToCoast,
                                   clipToOcean = TRUE)
   
-  message("got this far")
-  View(occurrenceVector)
-  
   polygon <- st_as_sf(occurrenceVector)
   
   #I'm returning both here because a recent update to the glatos package made it so that we can't pass the multipolygon to make_transition (the function we had been using, make_transition2,
