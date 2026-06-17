@@ -38,6 +38,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                fda_type = "time-diff",
                dist_threshold = 500,
                world_raster = NULL,
+               qcArguments = NULL, #Optional pass-through from runQC, contains arguments for species-specific QC parameters. 
                ...) {
   if(!is.data.frame(x)) stop("x must be a data.frame")
   ## Configure output processed data file
@@ -73,10 +74,14 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   }
   
   #Removed sections flagged as redundant. - BD 30/06/2022
+  
+  #Let the user know what file (tag) we're operating on. 
   message(x$filename[1])
   write(paste0(x$filename[1],":  ", " Grabbing species shapefile."),
         file = logfile,
         append = TRUE)
+  
+  #This preserves the original IMOS functionality, which uses the ALA (Atlas of Living Australia) to get a shapefile. 
   if(data_format == "imos") {
     spe <- unique(x$species_scientific_name)
     CAAB_species_id <- unique(x$CAAB_species_id)
@@ -101,21 +106,35 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
             append = TRUE)
       shp_b <- NULL
     }
-  
   } else if (data_format == "otn") {
+    arguments <- NULL
+    #Meanwhile, this is our version, which uses locally cached versions.
+    #We're also going to search the qcParameters we've been given here, since they both rely on a camelcased species name, so now's as good a time as any. 
+    
+    #Get the species name we're working with.
+    species <- unique(x$species_scientific_name)
+    #Camel-case it so that it matches what's in the list of polygons returned by createAndFetchPolygons/getPolygonsFromDetectionExtract...
+    species <- str_to_camel(species)
+    
+    #Start by looking for and processing the shapefile. 
     if(is.null(shapefile)) {
       message("WARNING: No shapefile supplied. Some tests may not run.")
       shp_b <- NULL
     }
     else if(is.list(shapefile)) {
-      species <- unique(x$species_scientific_name)
-      message(paste0("Species: ", species))
-      species <- str_to_camel(species)
+      #And now get the polygon from the array. 
       shp_b <- shapefile[[species]]$geometry
     }
     else {
       shp_b <- shapefile  
-    }  
+    }
+    
+    if(!is.null(qcArguments))
+    {
+      if(species %in% qcArguments) {
+        arguments <- qcArguments[species]
+      }
+    }
   }
   write(paste0(x$filename[1],
                ":  "," Shapefile Grab done."),
@@ -182,7 +201,6 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   
 	#bathyUrl = "https://upwell.pfeg.noaa.gov/erddap/griddap/etopo5.geotif?ROSE%5B(40):1:(50)%5D%5B(280):1:(320)%5D"
   #message("Starting dist/velocity tests")
-  #Commented out to test if I can get the rest of this running
 	## Distance and Velocity tests
   dist <- NULL
   if(any(is.na(x$transmitter_deployment_longitude)) | any(is.na(x$transmitter_deployment_longitude))) {
@@ -227,35 +245,21 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   	               })
   	message("shortest dist calculated")
   }
-  
-  ## Converts unique sets of lat/lon detection coordinates and release lat/lon 
-  ##  coordinates to SpatialPoints to test subsequently whether or not detections 
-  ##  are in distribution range
-  
-  ##Commenting out since we're doing this above. Testing to see if I'm accidentally superseding myself., 
-  # if (!is.null(shp_b)) {
-  #   ll <- unique(data.frame(x$longitude, x$latitude)) %>%
-  #     st_as_sf(coords = c("x.longitude", "x.latitude"), crs = st_crs(shp_b))
-  # 
-  #   # coordinates(ll) <- ~ x.longitude + x.latitude
-  #   # proj4string(ll) <- suppressWarnings(proj4string(shp_b))
-  # 
-  #   if (!is.na(x$transmitter_deployment_longitude[1])) {
-  #     ll_r <- data.frame(lon = x$transmitter_deployment_longitude[1], 
-  #                        lat = x$transmitter_deployment_latitude[1]) %>%
-  #       st_as_sf(coords = c("lon", "lat"), crs = st_crs(shp_b))
-  #     
-  #     # coordinates(ll_r) <-
-  #     #   ~ x.transmitter_deployment_longitude.1. + x.transmitter_deployment_latitude.1.
-  #     # proj4string(ll_r) <- suppressWarnings(proj4string(shp_b))
-  #   }
-  # }
+ 
     if("Velocity_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
       write(paste0(x$filename[1],
                    ":  ", " Running velocity check"),
             file = logfile,
             append = TRUE)
-    	temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist, ...)
+      
+      #Account for custom parameters if we have them.
+      if(!is.null(arguments)) {
+        velocity_threshold <- arguments['velocity_threshold']
+        temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist, velocity_threshold, ...)
+      }
+      else{
+        temporal_outcome <- qc_test_velocity(x, temporal_outcome, dist, ...)
+      }
     }
   
     if("Distance_QC" %in% colnames(temporal_outcome) & !is.null(dist)) {
@@ -263,9 +267,18 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance check"),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_distance(x, temporal_outcome, dist, ...)
+      
+      #Account for custom parameters if we have them.
+      if(!is.null(arguments)){
+        dist_threshold <- arguments['distance_threshold']
+        temporal_outcome <- qc_test_distance(x, temporal_outcome, dist, dist_threshold, ...)
+      }
+      else{
+        temporal_outcome <- qc_test_distance(x, temporal_outcome, dist, ...) 
+      }
     }
 
+    #Debug to let me know the distance and velocity tests are done running.
 		message("Dist/velocity tests done.")
 
 		## Detection distribution test
@@ -274,6 +287,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running detection distribution check."),
             file = logfile,
             append = TRUE)
+      
+      #No custom parameters to worry about here.
       temporal_outcome <- qc_test_det_distro(x, ll, temporal_outcome, shp_b)
     }
 
@@ -283,7 +298,14 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running distance from release check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_test_dist_release(x, temporal_outcome, dist_threshold, ...)
+      
+      if(!is.null(arguments)) {
+        release_dist_threshold <- arguments['release_dist_threshold']
+        temporal_outcome <- qc_test_dist_release(x, temporal_outcome, release_dist_threshold, ...) 
+      }
+      else {
+        temporal_outcome <- qc_test_dist_release(x, temporal_outcome, ...)
+      }
     }
 		
     if("ReleaseDate_QC" %in% colnames(temporal_outcome)) {
@@ -292,6 +314,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release date check."),
             file = logfile,
             append = TRUE)
+      
+      #No custom parameters to worry about here. 
       temporal_outcome <- qc_test_release_time_diff(x, temporal_outcome, ...)
     }
 
@@ -300,7 +324,14 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
                    ":  ", " Running release location check."),
             file = logfile,
             append = TRUE)
-      temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format, ...)
+      
+      if(!is.null(arguments)) {
+        release_loc_threshold <- arguments['release_loc_threshold']
+        temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format, release_loc_threshold, ...) 
+      }
+      else {
+        temporal_outcome <- qc_release_location_test(x, temporal_outcome, shp_b, dist, ll_r, data_format, ...) 
+      }
     }
 		
 		## it might be better to keep all tests in temporal_outcome & just ensure
