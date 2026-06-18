@@ -61,7 +61,7 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 	  if(is.list(distribution_shp)){
 	    speciesName <- str_to_camel(species$species_scientific_name[i])
 	    message(speciesName)
-	    expert_shp <- distribution_shp[[speciesName]]$geometry
+	    expert_shp <- distribution_shp[[speciesName]]
 	  }
 	  else if(!is.null(distribution_shp)) {
 	    expert_shp <- distribution_shp
