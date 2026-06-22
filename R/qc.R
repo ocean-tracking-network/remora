@@ -203,7 +203,8 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
   #message("Starting dist/velocity tests")
 	## Distance and Velocity tests
   dist <- NULL
-  if(any(is.na(x$transmitter_deployment_longitude)) | any(is.na(x$transmitter_deployment_longitude))) {
+  if(any(is.na(x$transmitter_deployment_latitude)) | any(is.na(x$transmitter_deployment_longitude))) {
+    message("Missing some transmitter deployment longitudes/latitudes")
     write(paste0(x$filename[1],
                  ":  ", " Not enough data for some QC checks."),
           file = logfile,
