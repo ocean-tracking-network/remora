@@ -114,6 +114,7 @@ runQC <- function(x,
                   fda_type = "time_diff", #Added by Bruce Delo for pass-through to QC, then to false detections. Lets user decide whether to use remora's time diff method or pincock method.
                   rollup = FALSE, #Added by Bruce Delo, invokes Surimi's rollup function to return QC columns attached to detection extract.
                   world_raster = NULL, #Added by Bruce Delo, pass-through to QC for use as something other than Australia's raster for shortest-distance calculation.
+                  parameters = NULL, #Added by Bruce Delo. An optional list of lists that can contain individualized parameters for different species QC. 
                    .parallel = FALSE,
                    .ncores = detectCores() - 2,
                    .progress = TRUE,

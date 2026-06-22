@@ -33,6 +33,7 @@
 ##' @importFrom dplyr %>% summarise left_join group_by bind_rows distinct count
 ##' @importFrom grDevices extendrange
 ##' @importFrom utils browseURL
+##' @importFrom stringr str_to_camel
 ##'
 ##' @export
 
@@ -57,7 +58,12 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
   }
   
 	for (i in 1:nrow(species)){
-	  if(!is.null(distribution_shp)) {
+	  if(is.list(distribution_shp)){
+	    speciesName <- str_to_camel(species$species_scientific_name[i])
+	    message(speciesName)
+	    expert_shp <- distribution_shp[[speciesName]]
+	  }
+	  else if(!is.null(distribution_shp)) {
 	    expert_shp <- distribution_shp
 	  }
 	  else {
@@ -93,7 +99,6 @@ plotQC <- function(x, path = NULL, pal = "PuOr", revpal = TRUE, distribution_shp
 		                                         transmitter_deployment_longitude,
 		                                         transmitter_deployment_latitude,
 		                                         ReleaseLocation_QC)))
-		View(releases)
 		
 		 data <- data[, c('transmitter_id',
 		                  'tag_id',

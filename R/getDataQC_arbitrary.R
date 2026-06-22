@@ -385,7 +385,6 @@ get_data_arbitrary <- function(det=NULL,
         latitude = latitude.x,
         longitude = longitude.x,
       )
-    View(dd)
     if (!inherits(dd$transmitter_deployment_datetime, "POSIXt")) {
       if (inherits(dd$transmitter_deployment_datetime, "numeric")) {
         dd <- dd %>% mutate(
