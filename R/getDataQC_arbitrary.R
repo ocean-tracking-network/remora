@@ -83,6 +83,9 @@ get_data_arbitrary <- function(det=NULL,
     if(is.null(rmeta) && is.null(tmeta)) {
       derive = TRUE
       
+      message("Warning: Passing a detection extract to Remora without any associated receiver or tag metadata will work, but some information will have to be derived from the detection extract. For
+              the purposes of quality control this is acceptable, but be forewarned that information about tag deployments and receiver deployments and recovery may not be reflective of reality.")
+      
       #This will determine if the code is parquet or CSV and load it appropriately.
       processed_data <- surimi::map_otn_file(det, derive=TRUE)
       

@@ -123,7 +123,9 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     }
     else if(is.list(shapefile)) {
       #And now get the polygon from the array. 
+      message(paste0("Polygon found for ", species))
       shp_b <- shapefile[[species]]$geometry
+      View(shp_b)
     }
     else {
       shp_b <- shapefile  
@@ -198,6 +200,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
           append = TRUE)
   }
 	
+  message("False detections done.")
   
 	#bathyUrl = "https://upwell.pfeg.noaa.gov/erddap/griddap/etopo5.geotif?ROSE%5B(40):1:(50)%5D%5B(280):1:(320)%5D"
   #message("Starting dist/velocity tests")
@@ -225,8 +228,11 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     ## IDJ: add conditional on data_format
     ## BD: added a check to not run the OTN version of this if shp_b is null
   	## IDJ: moved !is.null(shp_b) check inside data_format = otn, otherwise when data_format = imos will never run
+  	message("Starting shortest distance calculation.")
   	if(data_format == "otn") {
-  	  resolution = scale_meters_to_degrees(transition_layer_res,shp_b)
+  	  resolution = scale_meters_to_degrees(transition_layer_res,shp_b,epsg=4326)
+  	  #resolution = scale_meters_to_degrees(transition_layer_res,shp_b,ref='max')
+  	  message("Resolution calculated.")
   	  transition_layer <- make_transition(st_as_sf(shp_b), res = resolution)
   	  tr <- transition_layer$transition
   	  print("Made transition layer")

@@ -89,7 +89,6 @@ createInputList <- function(path) {
     }
     
     return_info <- list("dets" = dets, "rmeta" = rmeta, "tmeta" = tmeta)
-    #View(return_info)
     return(return_info)
   }
   #Otherwise, if it's a file, then return the filename in an iterable list.
