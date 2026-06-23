@@ -125,7 +125,6 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
       #And now get the polygon from the array. 
       message(paste0("Polygon found for ", species))
       shp_b <- shapefile[[species]]$geometry
-      View(shp_b)
     }
     else {
       shp_b <- shapefile  

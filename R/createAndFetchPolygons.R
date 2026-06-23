@@ -39,8 +39,6 @@ createAndFetchPolygons <- function(sciNames, occurrenceFolder="localOccurrenceDa
       #When that's done, we'll save the vector itself in the polygons folder...
       write_sf(occurrenceList$polygon, polygonFilename)
       
-      View(occurrenceList$polygon)
-      
       #...and add the polygon to our output list. 
       polygons[[scientificName]] <- occurrenceList$polygon 
     }
@@ -59,12 +57,9 @@ createAndFetchPolygons <- function(sciNames, occurrenceFolder="localOccurrenceDa
       #When that's done, we'll save the vector itself in the polygons folder...
       write_sf(speciesList$polygon, polygonFilename)
       
-      View(speciesList$polygon)
-      
       #...and add the polygon to our output list. 
       polygons[[scientificName]] <- speciesList$polygon 
     }
   }
-  View(polygons)
   return(polygons)
 }  

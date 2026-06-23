@@ -319,8 +319,6 @@ get_data_arbitrary <- function(det=NULL,
   }
   if(!is.null(tag_meta)) {
     message("tag meta is not null")
-    #View(dd)
-    #View(tag_meta)
     dd <- left_join(dd,
                     tag_meta,
                     by = c("transmitter_id", "transmitter_deployment_id")) %>%
@@ -339,7 +337,6 @@ get_data_arbitrary <- function(det=NULL,
         -animal_sex.y,
         -embargo_date.x)
     
-    #View(dd)
     ## deal with any cases where deploy lon/lat is missing in detections but not metadata
     if(any(is.na(dd$transmitter_deployment_longitude.x)) |
        any(is.na(dd$transmitter_deployment_latitude.x))) { 
