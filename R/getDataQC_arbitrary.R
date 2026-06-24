@@ -105,22 +105,6 @@ get_data_arbitrary <- function(det=NULL,
         if ("datecollected" %in% columns) {
           mapped_list <- surimi::otn_imos_column_map(det, rmeta, tmeta, derive = FALSE)
         } else {
-          #This is another set of changes that has to get bundled into Surimi but is being included here as a quick proof of concept. The following columns contain parentheticals in their names that were not accounted for
-          #when I wrote the mapping code in Surimi. For now, I am just going to rename them here, but along with the changes to map_otn_file, I'm going to update Surimi with a bundle of changes that will address these
-          #as well. 
-          rmeta <- rename(rmeta, "DEPLOY_DATE_TIME" = "DEPLOY_DATE_TIME   (yyyy-mm-ddThh:mm:ss)")
-          rmeta <- rename(rmeta, "DEPLOYED_BY" = "DEPLOYED_BY (Lead Technicians)")
-          rmeta <- rename(rmeta, "RECOVERED" = "RECOVERED (Y/N/l)")
-          rmeta <- rename(rmeta, "RECOVER_DATE_TIME" = "RECOVER_DATE_TIME (yyyy-mm-ddThh:mm:ss)")
-          rmeta <- rename(rmeta, "RECOVER_LAT" = "RECOVER_LAT (dd.ddddd)")
-          rmeta <- rename(rmeta, "RECOVER_LONG" = "RECOVER_LONG (ddd.ddddd)")
-          rmeta <- rename(rmeta, "DATA_DOWNLOADED" = "DATA_DOWNLOADED (Y/N)")
-          rmeta <- rename(rmeta, "DOWNLOAD_DATE_TIME" = "DOWNLOAD_DATE_TIME (yyyy-mm-ddThh:mm:ss)")
-          rmeta <- rename(rmeta, "INS_MODEL_NUMBER" = "INS_MODEL_NO")
-          rmeta <- rename(rmeta, "INS_SERIAL_NUMBER" = "INS_SERIAL_NO")
-          rmeta <- rename(rmeta, "AR_MODEL_NUMBER" = "AR_MODEL_NO")
-          rmeta <- rename(rmeta, "AR_SERIAL_NUMBER" = "AR_SERIAL_NO")
-          
           mapped_list <- otn_imos_new_style_column_map(det, rmeta, tmeta, derive = FALSE, coll_code="BDLSPG", tagname_column = "tagName", format="csv")
         } 
       }
