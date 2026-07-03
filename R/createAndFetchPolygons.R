@@ -1,7 +1,7 @@
 #' @title Fetch species home range polygons if they exist locally, create and store them if not.
 #' 
-#' @import stringr str_to_camel
-#' @import sf write_sf
+#' @importFrom stringr str_to_camel
+#' @importFrom sf write_sf
 #' @export
 
 

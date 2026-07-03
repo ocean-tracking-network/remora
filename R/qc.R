@@ -19,7 +19,7 @@
 ##' @importFrom glatos make_transition2
 ##' @importFrom dplyr %>% bind_cols
 ##' @importFrom sf st_as_sf st_distance st_crs st_intersects st_coordinates
-##' @import stringr str_to_camel
+##' @importFrom stringr str_to_camel
 ##'
 ##' @keywords internal
 ##'
