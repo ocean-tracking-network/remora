@@ -42,7 +42,7 @@
 ##'
 ##' @export
 
-writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE, aggregate = FALSE) {
+writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE, aggregate = FALSE, aggregatedPath = "") {
 
   if(is.null(path)) {
     path <- getwd()
@@ -52,6 +52,16 @@ writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE, aggregate = FALS
   
   files <- x$filename
   #Create an empty dataframe to hold our aggregated QC info. 
+  if(aggregatedPath == "")
+  {
+    aggregatedPath <- paste0(file.path(path, "aggregatedQC"), ".csv")
+  }
+  if(aggregate == TRUE) {
+    #If we're aggregating, we want to delete whatever 'aggregated' file already exists so that we don't just add to it.
+    if(file.exists(aggregatedPath)) {
+      file.remove(aggregatedPath)
+    }
+  }
   aggregatedQC <- data.frame(matrix(ncol = 0, nrow = 0))
 
   if (csv) {
@@ -78,7 +88,7 @@ writeQC <- function(x, path = NULL, summary = TRUE, csv = TRUE, aggregate = FALS
           }
           write_delim(
             x$QC[[i]],
-            file = paste0(file.path(path, "aggregatedQC"), ".csv"),
+            file = aggregatedPath,
             delim = ",",
             col_names = include_cols,
             escape = 'none',
