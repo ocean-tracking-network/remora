@@ -15,6 +15,7 @@ qc(
   fda_type = "time-diff",
   dist_threshold = 500,
   world_raster = NULL,
+  qcArguments = NULL,
   ...
 )
 }
