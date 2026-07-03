@@ -15,6 +15,7 @@ runQC(
   fda_type = "time_diff",
   rollup = FALSE,
   world_raster = NULL,
+  parameters = NULL,
   .parallel = FALSE,
   .ncores = detectCores() - 2,
   .progress = TRUE,
