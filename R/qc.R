@@ -184,7 +184,7 @@ qc <- function(x, Lcheck = TRUE, logfile, tests_vector = c("FDA_QC",
     #Trying to force pincock into working as a stopgap.
     x$transmitter_codespace <- x$transmitter_id
     x$receiver_sn <- x$receiver_id
-    x$detection_timestamp_utc <- x$detection_datetime
+    x$detection_timestamp_utc <- as.POSIXct(x$detection_datetime)
     
     write(paste0(x$filename[1],
                  ":  ", " Stopgap columns set"),
