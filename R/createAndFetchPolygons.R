@@ -40,7 +40,12 @@ createAndFetchPolygons <- function(sciNames, occurrenceFolder="localOccurrenceDa
       write_sf(occurrenceList$polygon, polygonFilename)
       
       #...and add the polygon to our output list. 
-      polygons[[scientificName]] <- occurrenceList$polygon 
+      #Note about the '$geometry' here and below and not above: there's a minor hiccup wherein building the file from the geoJSON
+      #returns the polygon inside an object caled "$geometry." Doing it here as we do with createPolygon doesn't. The object is
+      #exactly the same, but the nesting is different. Since downstream code looks for $geometry, rather than futzing deep in
+      #the polygon generation code, for time's sake right now I'm going to artificially recreate that structure here so that the
+      #code will know what to look for. Sometime down the line I might fix this. --BD20260709
+      polygons[[scientificName]]$geometry <- occurrenceList$polygon 
     }
     
     #If none of that pops off then we have to get the occurrence data from scratch and make the polygon.
@@ -58,7 +63,7 @@ createAndFetchPolygons <- function(sciNames, occurrenceFolder="localOccurrenceDa
       write_sf(speciesList$polygon, polygonFilename)
       
       #...and add the polygon to our output list. 
-      polygons[[scientificName]] <- speciesList$polygon 
+      polygons[[scientificName]]$geometry <- speciesList$polygon 
     }
   }
   return(polygons)
